@@ -6,6 +6,7 @@ import {
 } from "@/app/(store)/profile/actions";
 import type { CustomerProfileRow } from "@/lib/customer-profile";
 import { maskAccountNumber } from "@/lib/customer-profile";
+import { DigitsInput } from "@/components/store/digits-input";
 
 type Props = {
   displayName: string;
@@ -85,6 +86,10 @@ export function ProfileView({
                     name="name"
                     className="profile-field__input"
                     required
+                    maxLength={120}
+                    pattern="[^0-9]*[^0-9s][^0-9]*"
+                    title="Name can't contain numbers."
+                    autoComplete="name"
                     defaultValue={displayName}
                   />
                 </label>
@@ -101,13 +106,18 @@ export function ProfileView({
                 </label>
                 <label className="profile-field">
                   <span className="profile-field__label">Phone</span>
-                  <input
+                  <DigitsInput
                     type="tel"
                     name="phone"
                     className="profile-field__input"
-                    placeholder="09XX XXX XXXX"
+                    placeholder="09XXXXXXXXX"
+                    maxLength={11}
+                    pattern="09[0-9]{9}"
+                    title="11-digit mobile number starting with 09, e.g. 09171234567"
+                    autoComplete="tel"
                     defaultValue={customer.phone ?? ""}
                   />
+                  <span className="profile-field__hint">Numbers only, e.g. 09171234567.</span>
                 </label>
                 <button type="submit" className="profile-btn profile-btn--primary">
                   Save account
@@ -127,12 +137,14 @@ export function ProfileView({
                   </legend>
                   <label className="profile-field">
                     <span className="profile-field__label">GCash number</span>
-                    <input
+                    <DigitsInput
                       type="tel"
                       name="gcash_number"
                       className="profile-field__input"
-                      inputMode="numeric"
-                      placeholder="09XX XXX XXXX"
+                      placeholder="09XXXXXXXXX"
+                      maxLength={11}
+                      pattern="09[0-9]{9}"
+                      title="11-digit GCash number starting with 09, e.g. 09171234567"
                       defaultValue={customer.gcash_number ?? ""}
                     />
                   </label>
@@ -142,6 +154,9 @@ export function ProfileView({
                       type="text"
                       name="gcash_account_name"
                       className="profile-field__input"
+                      maxLength={100}
+                      pattern="[^0-9]*"
+                      title="Name can't contain numbers."
                       defaultValue={customer.gcash_account_name ?? ""}
                     />
                   </label>
@@ -158,6 +173,7 @@ export function ProfileView({
                       name="bank_name"
                       className="profile-field__input"
                       placeholder="e.g. BDO, BPI"
+                      maxLength={60}
                       defaultValue={customer.bank_name ?? ""}
                     />
                   </label>
@@ -167,16 +183,20 @@ export function ProfileView({
                       type="text"
                       name="bank_account_name"
                       className="profile-field__input"
+                      maxLength={100}
+                      pattern="[^0-9]*"
+                      title="Name can't contain numbers."
                       defaultValue={customer.bank_account_name ?? ""}
                     />
                   </label>
                   <label className="profile-field">
                     <span className="profile-field__label">Account number</span>
-                    <input
-                      type="text"
+                    <DigitsInput
                       name="bank_account_number"
                       className="profile-field__input"
-                      inputMode="numeric"
+                      maxLength={20}
+                      pattern="[0-9]{8,20}"
+                      title="Account number: 8 to 20 digits, numbers only."
                       placeholder={
                         customer.bank_account_number
                           ? `Leave blank to keep ${maskAccountNumber(customer.bank_account_number)}`
@@ -210,42 +230,47 @@ export function ProfileView({
                       type="text"
                       name="card_holder_name"
                       className="profile-field__input"
+                      maxLength={100}
+                      pattern="[^0-9]*"
+                      title="Name can't contain numbers."
                       defaultValue={customer.card_holder_name ?? ""}
                     />
                   </label>
                   <label className="profile-field">
                     <span className="profile-field__label">Card number</span>
-                    <input
-                      type="text"
+                    <DigitsInput
                       name="card_number"
                       className="profile-field__input"
-                      inputMode="numeric"
                       placeholder="Enter only to update — we save last 4 digits"
                       autoComplete="cc-number"
                       maxLength={19}
+                      pattern="[0-9]{13,19}"
+                      title="Card number: 13 to 19 digits, numbers only."
                     />
                   </label>
                   <div className="profile-form__row">
                     <label className="profile-field profile-form__col">
                       <span className="profile-field__label">Exp. month</span>
-                      <input
-                        type="number"
+                      <DigitsInput
                         name="card_exp_month"
                         className="profile-field__input"
-                        min={1}
-                        max={12}
+                        maxLength={2}
+                        pattern="0?[1-9]|1[0-2]"
+                        title="Month from 1 to 12."
+                        autoComplete="cc-exp-month"
                         placeholder="MM"
                         defaultValue={customer.card_exp_month ?? ""}
                       />
                     </label>
                     <label className="profile-field profile-form__col">
                       <span className="profile-field__label">Exp. year</span>
-                      <input
-                        type="number"
+                      <DigitsInput
                         name="card_exp_year"
                         className="profile-field__input"
-                        min={new Date().getFullYear()}
-                        max={2099}
+                        maxLength={4}
+                        pattern="20[0-9]{2}"
+                        title="4-digit year, e.g. 2028."
+                        autoComplete="cc-exp-year"
                         placeholder="YYYY"
                         defaultValue={customer.card_exp_year ?? ""}
                       />

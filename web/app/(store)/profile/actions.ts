@@ -6,13 +6,29 @@ import { createClient } from "@/lib/supabase/server";
 import {
   cardBrandFromNumber,
   getCustomerProfile,
+  isValidCardNumber,
+  normalizePhMobile,
 } from "@/lib/customer-profile";
+
+function fail(message: string): never {
+  redirect("/profile?error=" + encodeURIComponent(message));
+}
+
+/** Person/account names: no digits, sensible length. */
+function checkName(value: string, label: string, max: number) {
+  if (/\d/.test(value)) fail(`${label} can't contain numbers.`);
+  if (value.length > max) fail(`${label} is too long (max ${max} characters).`);
+}
 
 export async function profileUpdateAccount(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  if (name === "") {
-    redirect("/profile?error=" + encodeURIComponent("Name cannot be empty."));
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
+  if (name === "") fail("Name cannot be empty.");
+  checkName(name, "Name", 120);
+
+  const phone = phoneRaw === "" ? "" : normalizePhMobile(phoneRaw);
+  if (phone === null) {
+    fail("Phone must be an 11-digit mobile number starting with 09 (numbers only), e.g. 09171234567.");
   }
 
   const supabase = await createClient();
@@ -58,30 +74,62 @@ export async function profileUpdatePayments(formData: FormData) {
 
   const existing = await getCustomerProfile(supabase, user.id);
 
-  const gcashNumber = String(formData.get("gcash_number") ?? "").trim();
+  const gcashRaw = String(formData.get("gcash_number") ?? "").trim();
+  const gcashNumber = gcashRaw === "" ? "" : normalizePhMobile(gcashRaw);
+  if (gcashNumber === null) {
+    fail("GCash number must be an 11-digit mobile number starting with 09 (numbers only).");
+  }
   const gcashName = String(formData.get("gcash_account_name") ?? "").trim();
+  checkName(gcashName, "GCash account name", 100);
+
   const bankName = String(formData.get("bank_name") ?? "").trim();
+  if (bankName.length > 60) fail("Bank name is too long (max 60 characters).");
   const bankAccName = String(formData.get("bank_account_name") ?? "").trim();
+  checkName(bankAccName, "Bank account name", 100);
   let bankAccNumber = String(formData.get("bank_account_number") ?? "").trim();
   if (bankAccNumber === "") {
     bankAccNumber = existing.bank_account_number ?? "";
+  } else if (!/^\d{8,20}$/.test(bankAccNumber)) {
+    fail("Bank account number must be 8 to 20 digits (numbers only).");
   }
 
   const cardHolder = String(formData.get("card_holder_name") ?? "").trim();
-  const cardDigits = String(formData.get("card_number") ?? "").replace(/\D/g, "");
+  checkName(cardHolder, "Name on card", 100);
+  const cardRaw = String(formData.get("card_number") ?? "").trim();
   let cardLast4 = existing.card_last4;
   let cardBrand = existing.card_brand;
-  if (cardDigits !== "") {
-    cardLast4 = cardDigits.slice(-4);
-    cardBrand = cardBrandFromNumber(cardDigits);
+  if (cardRaw !== "") {
+    if (!/^\d+$/.test(cardRaw)) fail("Card number must contain numbers only.");
+    if (!isValidCardNumber(cardRaw)) fail("That card number isn't valid. Please check the digits.");
+    cardLast4 = cardRaw.slice(-4);
+    cardBrand = cardBrandFromNumber(cardRaw);
   }
 
   let expMonth = existing.card_exp_month;
   let expYear = existing.card_exp_year;
   const em = String(formData.get("card_exp_month") ?? "").trim();
   const ey = String(formData.get("card_exp_year") ?? "").trim();
-  if (em !== "") expMonth = parseInt(em, 10);
-  if (ey !== "") expYear = parseInt(ey, 10);
+  if (em !== "") {
+    if (!/^\d{1,2}$/.test(em) || Number(em) < 1 || Number(em) > 12) {
+      fail("Expiry month must be a number from 1 to 12.");
+    }
+    expMonth = Number(em);
+  }
+  if (ey !== "") {
+    if (!/^\d{4}$/.test(ey) || Number(ey) > 2099) fail("Expiry year must be 4 digits, e.g. 2028.");
+    expYear = Number(ey);
+  }
+  if (em !== "" || ey !== "") {
+    const now = new Date();
+    if (
+      expMonth != null &&
+      expYear != null &&
+      (expYear < now.getFullYear() ||
+        (expYear === now.getFullYear() && expMonth < now.getMonth() + 1))
+    ) {
+      fail("That card has already expired.");
+    }
+  }
 
   let preferredRaw = String(formData.get("preferred_payment") ?? "").trim();
   if (!["", "cod", "gcash", "bank", "card"].includes(preferredRaw)) {

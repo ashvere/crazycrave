@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { placeOrder } from "@/app/(store)/checkout/actions";
+import { DigitsInput } from "@/components/store/digits-input";
 import {
   BARANGAY_DISTANCES,
   PRIORITY_SURCHARGE,
@@ -215,15 +216,16 @@ export function CheckoutForm({
               <label className="checkout-page__label" htmlFor="customer_phone">
                 Mobile number
               </label>
-              <input
+              <DigitsInput
                 type="tel"
                 name="customer_phone"
                 id="customer_phone"
                 className="form-control checkout-page__control"
-                inputMode="tel"
                 autoComplete="tel"
-                placeholder="09XX XXX XXXX"
-                title="Philippine number, e.g. 0917 123 4567"
+                placeholder="09XXXXXXXXX"
+                maxLength={11}
+                pattern="0[0-9]{9,10}"
+                title="Numbers only, e.g. 09171234567"
                 required
                 defaultValue={initial.phone}
               />

@@ -56,6 +56,29 @@ export function maskAccountNumber(number: string | null | undefined): string {
   return "•".repeat(Math.max(4, n.length - 4)) + n.slice(-4);
 }
 
+/** PH mobile as 09XXXXXXXXX (accepts +63 / 63 / 9XXXXXXXXX), or null if not a mobile number. */
+export function normalizePhMobile(raw: string): string | null {
+  let d = raw.replace(/[\s\-().+]/g, "");
+  if (/^63\d{10}$/.test(d)) d = `0${d.slice(2)}`;
+  else if (/^9\d{9}$/.test(d)) d = `0${d}`;
+  return /^09\d{9}$/.test(d) ? d : null;
+}
+
+/** Luhn checksum — catches mistyped card numbers. */
+export function isValidCardNumber(digits: string): boolean {
+  if (!/^\d{13,19}$/.test(digits)) return false;
+  let sum = 0;
+  for (let i = 0; i < digits.length; i++) {
+    let n = Number(digits[digits.length - 1 - i]);
+    if (i % 2 === 1) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    sum += n;
+  }
+  return sum % 10 === 0;
+}
+
 export function cardBrandFromNumber(digits: string): string {
   const d = digits.replace(/\D/g, "");
   if (d === "") return "";

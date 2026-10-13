@@ -44,7 +44,6 @@ export default async function RiderOrderChatPage({ params }: { params: Promise<{
           myUserId={user.id}
           otherName={order.customer_display_name || "Customer"}
           otherLabel="Customer"
-          otherPhone={order.customer_phone ?? null}
           backHref={`/rider/order/${orderId}`}
           initial={(messages ?? []) as ChatMessage[]}
           closed={isChatClosed(order)}

@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { markOrderChatRead } from "@/lib/order-chat";
 import { isChatClosed } from "@/lib/customer-orders";
 import { OrderChat, type ChatMessage } from "@/components/order-chat";
@@ -34,12 +33,6 @@ export default async function OrderChatPage({ params }: { params: Promise<{ id: 
     supabase.from("profiles").select("display_name").eq("id", order.rider_id).maybeSingle(),
   ]);
 
-  // Customers can't read rider_profiles directly; only expose the assigned rider's number.
-  const admin = createAdminClient();
-  const { data: riderProfile } = admin
-    ? await admin.from("rider_profiles").select("phone").eq("user_id", order.rider_id).maybeSingle()
-    : { data: null };
-
   await markOrderChatRead(orderId);
 
   return (
@@ -51,7 +44,6 @@ export default async function OrderChatPage({ params }: { params: Promise<{ id: 
         myUserId={user.id}
         otherName={(rider?.display_name as string | null)?.trim() || "Your rider"}
         otherLabel="Your rider"
-        otherPhone={(riderProfile?.phone as string | null) ?? null}
         backHref={`/order-track/${orderId}`}
         initial={(messages ?? []) as ChatMessage[]}
         closed={isChatClosed(order)}

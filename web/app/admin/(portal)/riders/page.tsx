@@ -143,7 +143,7 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
                       <dl className="row small mb-0">
                         <dt className="col-5 col-sm-4 text-muted fw-normal">Phone</dt>
                         <dd className="col-7 col-sm-8 mb-1">
-                          {d?.phone ? <a href={`tel:${d.phone}`}>{d.phone}</a> : "—"}
+                          {d?.phone ? <span className="tabular-nums">{d.phone}</span> : "—"}
                         </dd>
                         <dt className="col-5 col-sm-4 text-muted fw-normal">Vehicle</dt>
                         <dd className="col-7 col-sm-8 mb-1 text-capitalize">

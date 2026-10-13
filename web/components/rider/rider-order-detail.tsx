@@ -45,13 +45,9 @@ export function RiderOrderDetail({ order, items }: Props) {
                 <dt>Contact</dt>
                 <dd className="d-flex flex-wrap align-items-center gap-2">
                   <span className="tabular-nums fw-medium">{order.customer_phone}</span>
-                  <a href={`tel:${order.customer_phone}`} className="btn btn-sm btn-success rounded-pill">
-                    <i className="bi bi-telephone-fill me-1" aria-hidden="true" />
-                    Call
-                  </a>
-                  <a href={`sms:${order.customer_phone}`} className="btn btn-sm btn-outline-secondary rounded-pill">
-                    <i className="bi bi-chat-text me-1" aria-hidden="true" />
-                    Text
+                  <a href={`sms:${order.customer_phone}`} className="btn btn-sm btn-dark rider-btn-pill">
+                    <i className="bi bi-chat-dots-fill me-1" aria-hidden="true" />
+                    Message
                   </a>
                 </dd>
               </>
@@ -97,10 +93,6 @@ export function RiderOrderDetail({ order, items }: Props) {
               <i className="bi bi-sign-turn-right me-1" aria-hidden="true" />
               Navigate
             </a>
-            <span className="btn btn-sm btn-outline-secondary rider-btn-pill disabled">
-              <i className="bi bi-chat-dots me-1" aria-hidden="true" />
-              Message (PHP chat)
-            </span>
           </div>
         </div>
 

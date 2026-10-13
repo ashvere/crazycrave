@@ -29,7 +29,6 @@ export function OrderChat({
   myUserId,
   otherName,
   otherLabel,
-  otherPhone,
   backHref,
   initial,
   closed,
@@ -39,7 +38,6 @@ export function OrderChat({
   myUserId: string;
   otherName: string;
   otherLabel: string;
-  otherPhone?: string | null;
   backHref: string;
   initial: ChatMessage[];
   closed: boolean;
@@ -131,12 +129,6 @@ export function OrderChat({
             {otherLabel} · Order #{orderId}
           </p>
         </div>
-        {otherPhone ? (
-          <a href={`tel:${otherPhone}`} className="btn btn-sm btn-success rounded-pill kk-chat__call">
-            <i className="bi bi-telephone-fill me-1" aria-hidden="true" />
-            Call
-          </a>
-        ) : null}
       </header>
 
       <div className="kk-chat__thread" ref={threadRef} aria-live="polite">

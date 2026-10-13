@@ -65,7 +65,17 @@ export const getStaffSession = cache(async (): Promise<StaffSession | null> => {
 export async function requireStaff(): Promise<StaffSession> {
   const s = await getStaffSession();
   if (!s) {
-    redirect("/admin/login?required=1");
+    // Tell the login page why: no session cookie reached the server, or a session
+    // exists but its profile isn't admin/restaurant (or couldn't be read).
+    let reason = "session";
+    if (isSupabaseConfigured()) {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) reason = "role";
+    }
+    redirect(`/admin/login?required=1&reason=${reason}`);
   }
   return s;
 }

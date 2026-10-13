@@ -17,19 +17,39 @@ export async function staffSignIn(formData: FormData): Promise<StaffSignInResult
     return { error: "Email and password are required." };
   }
 
+  const cfg = getSupabasePublicConfig();
+  const projectHint = cfg?.url ? ` (Database: ${new URL(cfg.url).hostname})` : "";
+
   const supabase = await createClient();
-  const { data: authData, error: signErr } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-  if (signErr) {
-    const msg = signErr.message;
-    if (msg.includes("path") && msg.includes("URL")) {
-      return {
-        error: `${msg} — Check NEXT_PUBLIC_SUPABASE_URL in Vercel (and .env.local): use only https://YOUR_REF.supabase.co with no /auth or /rest path.`,
-      };
+  let authData: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["data"];
+  try {
+    const res = await supabase.auth.signInWithPassword({ email, password });
+    if (res.error) {
+      const msg = res.error.message;
+      if (msg.includes("path") && msg.includes("URL")) {
+        return {
+          error: `${msg} — Check NEXT_PUBLIC_SUPABASE_URL in Vercel (and .env.local): use only https://YOUR_REF.supabase.co with no /auth or /rest path.`,
+        };
+      }
+      if (/invalid login credentials/i.test(msg)) {
+        const spaces =
+          password !== password.trim()
+            ? " Your password starts or ends with a space — check for a stray space from copy/paste."
+            : "";
+        return { error: `Wrong email or password for ${email}.${spaces}${projectHint}` };
+      }
+      if (/email not confirmed/i.test(msg)) {
+        return {
+          error: `${email} hasn't confirmed its email yet. Confirm it in Supabase → Authentication → Users.${projectHint}`,
+        };
+      }
+      return { error: `Sign-in failed: ${msg}${projectHint}` };
     }
-    return { error: msg };
+    authData = res.data;
+  } catch (e) {
+    return {
+      error: `Could not reach the login service: ${e instanceof Error ? e.message : String(e)}${projectHint}`,
+    };
   }
 
   const user = authData.user;
@@ -44,15 +64,14 @@ export async function staffSignIn(formData: FormData): Promise<StaffSignInResult
 
   if (profileErr) {
     await supabase.auth.signOut();
-    return { error: `Could not load your profile: ${profileErr}` };
+    const keyHint = /api key|jwt|apikey/i.test(profileErr)
+      ? " Check SUPABASE_SERVICE_ROLE_KEY in Vercel — it must belong to the same Supabase project as NEXT_PUBLIC_SUPABASE_URL."
+      : "";
+    return { error: `Signed in, but could not load your profile: ${profileErr}.${keyHint}${projectHint}` };
   }
 
   if (role !== "admin" && role !== "restaurant") {
     await supabase.auth.signOut();
-    const cfg = getSupabasePublicConfig();
-    const projectHint = cfg?.url
-      ? ` Connected project: ${new URL(cfg.url).hostname}.`
-      : "";
     if (!role) {
       return {
         error:

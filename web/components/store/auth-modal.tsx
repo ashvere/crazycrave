@@ -102,6 +102,22 @@ export function AuthModal() {
       return;
     }
     setPendingConfirmEmail(null);
+
+    // Make sure the server sees the new session cookie; otherwise every page would
+    // still treat the customer as logged out ("log in to check out", empty My orders).
+    try {
+      const res = await fetch('/api/auth/session', { cache: 'no-store', credentials: 'same-origin' });
+      const body = (await res.json()) as { loggedIn?: boolean };
+      if (!body.loggedIn) {
+        setErr(
+          "Your password was accepted, but this browser isn't keeping you signed in. Allow cookies for this site (turn off private mode / strict tracking protection), or open the site in Chrome or Safari instead of an in-app browser."
+        );
+        return;
+      }
+    } catch {
+      // Network hiccup on the check itself — carry on; pages will ask to log in if needed.
+    }
+
     // Go to the page that asked for login (?next=), else stay where the customer was
     // (e.g. cart → checkout), minus the login prompt params.
     const params = new URLSearchParams(window.location.search);

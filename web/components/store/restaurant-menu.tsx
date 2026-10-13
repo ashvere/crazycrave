@@ -1,20 +1,28 @@
 import Link from "next/link";
 import type { MenuRow, ShopRow } from "@/lib/menu-catalog";
 import { encodeMenuImagePath } from "@/lib/cart-cookies";
+import { CartBar, QtyStepper } from "@/components/store/cart-controls";
 
 type Props = {
   shop: ShopRow;
   menus: MenuRow[];
-  isLoggedIn: boolean;
   differentShopError: boolean;
+  /** menu_id → quantity already in the cart (only for this shop). */
+  cartQty: Record<string, number>;
+  /** Cart currently holds items from a different shop. */
+  otherShopInCart: boolean;
+  addedId: number | null;
 };
 
 export function RestaurantMenuPage({
   shop,
   menus,
-  isLoggedIn,
   differentShopError,
+  cartQty,
+  otherShopInCart,
+  addedId,
 }: Props) {
+  const returnTo = `/restaurant?id=${shop.id}`;
   const logoSrc = `/images/logos/${encodeMenuImagePath(shop.logo ?? "")}`;
   const about = (shop.description ?? "").trim();
 
@@ -96,85 +104,83 @@ export function RestaurantMenuPage({
             <span>Menu</span>
           </h2>
 
+          {otherShopInCart && !differentShopError ? (
+            <p className="kk-menu-notice" role="note">
+              <i className="bi bi-info-circle" aria-hidden="true" />
+              <span>
+                Your cart has items from another shop. One shop per order —{" "}
+                <Link href="/cart">finish or clear that cart</Link> to order here.
+              </span>
+            </p>
+          ) : null}
+
           {menus.length === 0 ? (
             <p className="text-muted">No menu available.</p>
           ) : (
-            <div
-              className="menu-carousel menu-carousel--restaurant"
-              data-menu-carousel
-            >
-              <div className="menu-carousel__shell">
-                <button
-                  type="button"
-                  className="menu-carousel__nav menu-carousel__nav--prev"
-                  aria-label="Previous menu items"
-                >
-                  <i className="bi bi-chevron-left" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="menu-carousel__nav menu-carousel__nav--next"
-                  aria-label="Next menu items"
-                >
-                  <i className="bi bi-chevron-right" aria-hidden="true" />
-                </button>
-                <div className="menu-carousel__viewport">
-                  <div className="menu-carousel__track">
-                    {menus.map((menu) => {
-                      const mid = menu.id;
-                      const imgSrc = `/images/menus/${encodeMenuImagePath(menu.image ?? "")}`;
-                      const desc = menu.description ?? "";
-                      return (
-                        <div key={mid} className="menu-carousel__item">
-                          <div className="card menu-item-card h-100 border-0 w-100">
-                            <div className="menu-item-card__img-wrap">
-                              <img
-                                src={imgSrc}
-                                className="menu-item-card__img"
-                                alt={menu.name}
-                              />
-                            </div>
-                            <div className="card-body">
-                              <h3 className="menu-item-card__title h5">{menu.name}</h3>
-                              <p className="menu-item-card__desc text-muted">{desc}</p>
-                              <strong className="menu-item-card__price">
-                                ₱{Number(menu.price).toFixed(2)}
-                              </strong>
-                            </div>
-                            {isLoggedIn ? (
-                              <form action="/api/cart/add" method="POST">
-                                <input type="hidden" name="menu_id" value={mid} />
-                                <button
-                                  type="submit"
-                                  className="btn btn-sm w-100 btn-menu-cart"
-                                >
-                                  <i className="bi bi-cart-plus me-1" aria-hidden="true" />
-                                  Add to cart
-                                </button>
-                              </form>
-                            ) : (
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-menu-outline w-100"
-                                data-bs-toggle="modal"
-                                data-bs-target="#kkAuthModal"
-                                data-auth-tab="login"
-                              >
-                                <i
-                                  className="bi bi-box-arrow-in-right me-1"
-                                  aria-hidden="true"
-                                />
-                                Log in to order
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ul className="kk-menu-list" aria-label={`${shop.name} menu`}>
+              {menus.map((menu) => {
+                const mid = menu.id;
+                const imgSrc = menu.image
+                  ? `/images/menus/${encodeMenuImagePath(menu.image)}`
+                  : "/images/menus/default.png";
+                const desc = (menu.description ?? "").trim();
+                const inCart = cartQty[String(mid)] ?? 0;
+                const justAdded = addedId === mid;
+                return (
+                  <li
+                    key={mid}
+                    id={`menu-${mid}`}
+                    className={`kk-menu-item${justAdded ? " is-added" : ""}`}
+                  >
+                    <div className="kk-menu-item__media">
+                      <img src={imgSrc} alt="" loading="lazy" width={160} height={160} />
+                    </div>
+                    <div className="kk-menu-item__body">
+                      <h3 className="kk-menu-item__name">{menu.name}</h3>
+                      {desc !== "" ? <p className="kk-menu-item__desc">{desc}</p> : null}
+                      <div className="kk-menu-item__foot">
+                        <strong className="kk-menu-item__price tabular-nums">
+                          ₱{Number(menu.price).toFixed(2)}
+                        </strong>
+                        {inCart > 0 ? (
+                          <QtyStepper
+                            menuId={mid}
+                            qty={inCart}
+                            name={menu.name}
+                            returnTo={returnTo}
+                            size="sm"
+                          />
+                        ) : otherShopInCart ? (
+                          <button
+                            type="button"
+                            className="kk-add-btn kk-add-btn--muted"
+                            disabled
+                            title="Your cart has items from another shop"
+                          >
+                            <i className="bi bi-plus-lg" aria-hidden="true" />
+                            Add
+                          </button>
+                        ) : (
+                          <form action="/api/cart/add" method="POST">
+                            <input type="hidden" name="menu_id" value={mid} />
+                            <input type="hidden" name="return_to" value={returnTo} />
+                            <button type="submit" className="kk-add-btn" aria-label={`Add ${menu.name}`}>
+                              <i className="bi bi-plus-lg" aria-hidden="true" />
+                              Add
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                      {justAdded ? (
+                        <p className="kk-menu-item__added" role="status">
+                          <i className="bi bi-check-circle-fill" aria-hidden="true" /> Added to cart
+                        </p>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
 
           <p className="mt-4 mb-0">
@@ -184,6 +190,7 @@ export function RestaurantMenuPage({
           </p>
         </div>
       </main>
+      <CartBar />
     </>
   );
 }

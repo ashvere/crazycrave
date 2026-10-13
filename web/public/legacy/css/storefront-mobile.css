@@ -1,0 +1,578 @@
+/* ==========================================================================
+   Crispy Crave — storefront app shell (loaded after style.css)
+   Phone-first navigation, menu list, cart controls. Desktop look is unchanged
+   except where noted.
+   ========================================================================== */
+
+.kk-show-phone {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Header: below 1200px the header wraps to a variable height, so a fixed header
+   with a guessed body padding covered page content. Sticky reserves its own space.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1199.98px) {
+    body:has(> .main-header),
+    body:has(.main-header) {
+        padding-top: 0 !important;
+    }
+
+    .main-header {
+        position: sticky;
+        top: 0;
+    }
+
+    #shops,
+    #shops.home-logged {
+        scroll-margin-top: 140px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Phones
+   -------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .kk-hide-phone {
+        display: none !important;
+    }
+
+    .kk-show-phone {
+        display: inline-block !important;
+    }
+
+    /* One slim row: logo + name | account action. Nav + hours live in tab bar / footer. */
+    .main-header .header-cluster {
+        display: none;
+    }
+
+    .main-header .header-inner {
+        grid-template-rows: auto;
+        row-gap: 0;
+        padding: 8px max(14px, env(safe-area-inset-left)) 8px max(14px, env(safe-area-inset-right));
+    }
+
+    .main-header .brand-name {
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+
+    .main-header .logo {
+        width: 38px;
+        height: 38px;
+    }
+
+    .main-header .logout-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        font-size: 1.05rem;
+    }
+
+    .main-header .register-btn {
+        padding: 8px 14px;
+        font-size: 0.8125rem;
+    }
+
+    #shops,
+    #shops.home-logged {
+        scroll-margin-top: 72px;
+    }
+
+    /* Room for the bottom tab bar (and cart bar when present). */
+    body:has(.kk-tabbar) {
+        padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    }
+
+    body:has(.kk-tabbar):has(.kk-cart-bar) {
+        padding-bottom: calc(64px + 68px + env(safe-area-inset-bottom));
+    }
+
+    /* Hero: smaller photo so the headline and "Order now" are visible sooner. */
+    .hero-visual {
+        min-height: 0;
+    }
+
+    .hero-visual__stack {
+        width: min(58vw, 230px);
+    }
+
+    /* Weather picks: one swipeable row instead of four tall stacked cards. */
+    .crispy-picks__grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .crispy-picks__grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .crispy-picks__card {
+        flex: 0 0 72%;
+        scroll-snap-align: start;
+    }
+
+    /* Crispy AI launcher sits above the tab bar / cart bar instead of over content. */
+    body:has(.kk-tabbar) .crispy-ai {
+        bottom: calc(64px + 12px + env(safe-area-inset-bottom));
+        right: 12px;
+    }
+
+    body:has(.kk-tabbar):has(.kk-cart-bar) .crispy-ai {
+        bottom: calc(64px + 68px + 12px + env(safe-area-inset-bottom));
+    }
+
+    .crispy-ai__launcher {
+        transform: scale(0.85);
+        transform-origin: bottom right;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Bottom tab bar (phones only)
+   -------------------------------------------------------------------------- */
+.kk-tabbar {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .kk-tabbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1040;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        height: calc(64px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-top: 1px solid var(--color-line);
+        box-shadow: 0 -6px 24px rgba(10, 10, 10, 0.06);
+    }
+}
+
+.kk-tabbar__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 48px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.kk-tabbar__item:active {
+    transform: scale(0.94);
+}
+
+.kk-tabbar__item.is-active {
+    color: var(--color-orange-dark);
+}
+
+.kk-tabbar__icon {
+    position: relative;
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.kk-tabbar__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.kk-tabbar__badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--color-orange-dark);
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    box-shadow: 0 0 0 2px #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Sticky cart bar
+   -------------------------------------------------------------------------- */
+.kk-cart-bar {
+    position: fixed;
+    z-index: 1035;
+    left: 50%;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: min(520px, calc(100% - 32px));
+    animation: kk-cart-bar-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 767.98px) {
+    .kk-cart-bar {
+        bottom: calc(64px + 8px + env(safe-area-inset-bottom));
+        width: calc(100% - 24px);
+    }
+}
+
+@keyframes kk-cart-bar-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 12px);
+    }
+}
+
+.kk-cart-bar__link {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 10px 18px;
+    border-radius: 16px;
+    background: var(--color-ink);
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 14px 36px rgba(10, 10, 10, 0.28);
+}
+
+.kk-cart-bar__link:hover {
+    color: #fff;
+    background: #000;
+}
+
+.kk-cart-bar__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.kk-cart-bar__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-weight: 700;
+}
+
+.kk-cart-bar__total {
+    font-weight: 700;
+    color: var(--color-gold-bright);
+}
+
+/* Avoid the bar covering the last menu rows on desktop. */
+body:has(.kk-cart-bar) .restaurant-menu-page {
+    padding-bottom: 96px;
+}
+
+/* --------------------------------------------------------------------------
+   Restaurant menu list (replaces the one-at-a-time carousel)
+   -------------------------------------------------------------------------- */
+.kk-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 768px) {
+    .kk-menu-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (min-width: 1100px) {
+    .kk-menu-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.kk-menu-item {
+    display: flex;
+    gap: 14px;
+    padding: 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(10, 10, 10, 0.04);
+    scroll-margin-top: 96px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kk-menu-item.is-added {
+    border-color: rgba(184, 74, 18, 0.45);
+    box-shadow: 0 0 0 3px var(--color-orange-soft);
+}
+
+.kk-menu-item__media {
+    flex: 0 0 auto;
+    width: 104px;
+    height: 104px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--color-bg);
+}
+
+@media (min-width: 768px) {
+    .kk-menu-item__media {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+.kk-menu-item__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.kk-menu-item__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.kk-menu-item__name {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.kk-menu-item__desc {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.kk-menu-item__foot {
+    margin-top: auto;
+    padding-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.kk-menu-item__price {
+    font-size: 1.0625rem;
+    color: var(--color-orange-dark);
+}
+
+.kk-menu-item__added {
+    margin: 6px 0 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f7a3d;
+}
+
+.kk-menu-notice {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-gold-soft);
+    font-size: 0.875rem;
+}
+
+.kk-menu-notice a {
+    color: var(--color-orange-dark);
+    font-weight: 600;
+}
+
+.kk-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-orange-dark);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.kk-add-btn:hover {
+    background: var(--color-orange-hover);
+}
+
+.kk-add-btn:active {
+    transform: scale(0.96);
+}
+
+.kk-add-btn--muted,
+.kk-add-btn:disabled {
+    background: var(--color-line);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Quantity stepper
+   -------------------------------------------------------------------------- */
+.kk-qty {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-surface);
+}
+
+.kk-qty__btn {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--color-orange-dark);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.kk-qty__btn:hover {
+    background: var(--color-orange-soft);
+}
+
+.kk-qty__value {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.kk-qty--sm .kk-qty__btn {
+    width: 36px;
+    height: 36px;
+}
+
+/* --------------------------------------------------------------------------
+   Cart lines (replaces the 5-column table that was cramped on phones)
+   -------------------------------------------------------------------------- */
+.kk-cart-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kk-cart-line {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-line);
+}
+
+.kk-cart-line:last-child {
+    border-bottom: 0;
+}
+
+.kk-cart-line__img {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.kk-cart-line__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.kk-cart-line__name {
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.kk-cart-line__unit {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.kk-cart-line__side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.kk-cart-line__total {
+    font-weight: 700;
+}
+
+.cart-page__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767.98px) {
+    .cart-page__cta .btn {
+        flex: 1 1 100%;
+    }
+}
+
+/* Cart card: the old table carried its own cell padding; the line list needs it here. */
+.cart-page__surface > p,
+.cart-page__surface > .kk-cart-list {
+    padding-inline: clamp(16px, 3vw, 24px);
+}
+
+.cart-page__surface > p:first-child {
+    padding-top: 16px;
+}
+
+/* Phones: the floating Crispy AI button would cover "Add" / stepper buttons on
+   menu and cart screens — keep it on the other pages only. */
+@media (max-width: 767.98px) {
+    body:has(.kk-menu-list) .crispy-ai,
+    body:has(.kk-cart-list) .crispy-ai {
+        display: none;
+    }
+}

@@ -27,6 +27,7 @@ export default function StoreLayout({
         rel="stylesheet"
       />
       <link href="/legacy/css/style.css" rel="stylesheet" />
+      <link href="/legacy/css/storefront-mobile.css" rel="stylesheet" />
       <StorefrontBodyClass />
       <StoreHeader />
       {children}

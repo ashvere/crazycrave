@@ -139,7 +139,16 @@
         return score;
     }
 
-    function weatherBlurb(item) {
+    // Rotated by card position so four picks never repeat the same sentence.
+    var SNACK_LINES = [
+        function (n) { return n + ' is a light, savory bite, just right for a cloudy afternoon.'; },
+        function (n) { return 'Craving something warm but not heavy? ' + n + ' hits the spot on an overcast day.'; },
+        function (n) { return 'A classic merienda — grab a few pieces of ' + n + ' while the skies stay gray.'; },
+        function (n) { return n + ' is easy to share and quick to enjoy whatever the weather brings.'; },
+    ];
+
+    function weatherBlurb(item, idx) {
+        idx = idx || 0;
         var itemTags = item.tags || [];
         var name = item.name;
         var kind = state.weatherKind;
@@ -163,7 +172,7 @@
             return 'Light, crispy snacks like ' + name + ' pair well with warm sunny weather — quick to eat and full of flavor.';
         }
         if (kind === 'cloudy' && itemTags.indexOf('dimsum') >= 0) {
-            return 'Steamed or fried dim sum like ' + name + ' suits overcast days when you want something tasty without feeling too heavy.';
+            return SNACK_LINES[idx % SNACK_LINES.length](name);
         }
         if (kind === 'cloudy' && itemTags.indexOf('comfort') >= 0) {
             return name + ' is a reliable pick for cloudy weather — comforting and easy to order from the menu.';
@@ -196,7 +205,10 @@
         if (picks.length < 4) {
             picks = scored;
         }
-        return picks.slice(0, 4);
+        return picks.slice(0, 4).map(function (row, i) {
+            row.blurb = weatherBlurb(row.item, i);
+            return row;
+        });
     }
 
     function applyWeatherTheme() {

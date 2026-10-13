@@ -12,6 +12,26 @@ export const COOKIE_CHECKOUT_PREFILL = "kk_checkout_prefill";
 
 export type CheckoutPrefill = Record<string, string>;
 
+export const CART_COOKIE_OPTS = {
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30,
+  sameSite: "lax" as const,
+  httpOnly: true,
+};
+
+export const MAX_LINE_QTY = 99;
+
+/** Only same-site storefront paths may be used as a post-cart redirect (no open redirects). */
+export function safeCartReturnTo(raw: unknown, fallback = "/cart"): string {
+  const s = String(raw ?? "");
+  if (!s.startsWith("/") || s.startsWith("//") || s.includes("\\")) return fallback;
+  return /^\/(restaurant|cart)(\?|#|$)/.test(s) ? s : fallback;
+}
+
+export function cartTotal(cart: Record<string, CartLine>): number {
+  return Object.values(cart).reduce((s, l) => s + Number(l.price) * (l.qty ?? 0), 0);
+}
+
 export function parseCartJson(raw: string | undefined): Record<string, CartLine> {
   if (!raw) return {};
   try {

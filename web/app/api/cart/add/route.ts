@@ -2,19 +2,19 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import {
+  CART_COOKIE_OPTS as cookieOpts,
   COOKIE_CART,
   COOKIE_CART_SHOP,
   COOKIE_CHECKOUT_PREFILL,
+  MAX_LINE_QTY,
   parseCartJson,
+  safeCartReturnTo,
   type CheckoutPrefill,
 } from "@/lib/cart-cookies";
 
-const cookieOpts = {
-  path: "/",
-  maxAge: 60 * 60 * 24 * 30,
-  sameSite: "lax" as const,
-  httpOnly: true,
-};
+/** 303 so the browser follows a POST with a GET. */
+const go = (path: string | URL, request: Request) =>
+  NextResponse.redirect(new URL(path, request.url), 303);
 
 export async function POST(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,21 +36,13 @@ export async function POST(request: Request) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    const u = new URL("/", request.url);
-    u.searchParams.set("login", "required");
-    return NextResponse.redirect(u);
-  }
-
+  // Guests may build a cart; login is required at checkout (prices are re-checked there).
   const form = await request.formData();
   const menuIdRaw = form.get("menu_id");
   const menuId = Number(menuIdRaw);
+  const returnTo = form.get("return_to") ? safeCartReturnTo(form.get("return_to")) : null;
   if (!menuIdRaw || !Number.isFinite(menuId) || menuId <= 0) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return go("/", request);
   }
 
   const { data: menu, error } = await supabase
@@ -60,7 +52,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (error || !menu || !menu.is_active) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return go(returnTo ?? "/", request);
   }
 
   const shopId = Number(menu.restaurant_id);
@@ -77,14 +69,14 @@ export async function POST(request: Request) {
     const u = new URL("/restaurant", request.url);
     u.searchParams.set("id", String(shopId));
     u.searchParams.set("error", "different_shop");
-    return NextResponse.redirect(u);
+    return go(u, request);
   }
 
   const keyStr = String(menuId);
   if (cart[keyStr]) {
     cart[keyStr] = {
       ...cart[keyStr],
-      qty: cart[keyStr].qty + 1,
+      qty: Math.min(cart[keyStr].qty + 1, MAX_LINE_QTY),
     };
   } else {
     cart[keyStr] = {
@@ -122,7 +114,17 @@ export async function POST(request: Request) {
     prefillCookie = JSON.stringify(prefill);
   }
 
-  const res = NextResponse.redirect(new URL("/cart", request.url));
+  // From a shop page: stay there (cart bar shows the update); otherwise open the cart.
+  let dest = new URL("/cart", request.url);
+  if (returnTo) {
+    dest = new URL(returnTo, request.url);
+    if (dest.pathname === "/restaurant") {
+      dest.searchParams.set("added", String(menuId));
+      dest.searchParams.delete("error");
+      dest.hash = `menu-${menuId}`;
+    }
+  }
+  const res = go(dest, request);
   res.cookies.set(COOKIE_CART, JSON.stringify(cart), cookieOpts);
   res.cookies.set(COOKIE_CART_SHOP, String(shopId), cookieOpts);
   if (prefillCookie) {

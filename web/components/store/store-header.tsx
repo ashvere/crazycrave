@@ -9,6 +9,7 @@ import {
 import { StaffTopbar } from "@/components/store/staff-topbar";
 import type { ProfileRole } from "@/lib/roles";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { MobileTabBar } from "@/components/store/mobile-tab-bar";
 
 export async function StoreHeader() {
   const supabase = await createClient();
@@ -49,6 +50,7 @@ export async function StoreHeader() {
   const bodyClass = user ? "has-session" : "";
 
   return (
+    <>
     <header className={`main-header ${bodyClass}`.trim()}>
       <div
         className={`header-inner${user ? " header-inner--session" : ""}`.trim()}
@@ -90,7 +92,7 @@ export async function StoreHeader() {
           ) : null}
           {role === "user" ? (
             <>
-              <Link href="/cart" className="cart-btn position-relative" aria-label="Cart">
+              <Link href="/cart" className="cart-btn position-relative kk-hide-phone" aria-label="Cart">
                 <span className="d-none d-sm-inline">Cart</span>
                 <i className="bi bi-cart3 d-sm-none fs-5" aria-hidden="true" />
                 <span className="visually-hidden d-sm-none">Cart</span>
@@ -98,7 +100,7 @@ export async function StoreHeader() {
                   <span className="cart-badge">{cartCount}</span>
                 ) : null}
               </Link>
-              <Link href="/my-orders" className="user-btn">
+              <Link href="/my-orders" className="user-btn kk-hide-phone">
                 <span className="d-none d-sm-inline">My orders</span>
                 <span className="d-sm-none">Orders</span>
               </Link>
@@ -113,7 +115,7 @@ export async function StoreHeader() {
               {role === "user" ? (
                 <Link
                   href="/profile"
-                  className="user-name user-name--link"
+                  className="user-name user-name--link kk-hide-phone"
                   title="Your profile"
                 >
                   {displayName}
@@ -123,8 +125,9 @@ export async function StoreHeader() {
                   {displayName}
                 </span>
               )}
-              <Link href="/logout" className="logout-btn">
-                Log out
+              <Link href="/logout" className="logout-btn" aria-label="Log out">
+                <i className="bi bi-box-arrow-right kk-show-phone" aria-hidden="true" />
+                <span className="kk-hide-phone">Log out</span>
               </Link>
             </>
           ) : (
@@ -136,11 +139,14 @@ export async function StoreHeader() {
               data-auth-tab="register"
               aria-haspopup="dialog"
             >
-              Get started
+              <span className="kk-hide-phone">Get started</span>
+              <span className="kk-show-phone">Sign up</span>
             </button>
           )}
         </div>
       </div>
     </header>
+    {role !== "rider" ? <MobileTabBar loggedIn={!!user} cartCount={cartCount} /> : null}
+    </>
   );
 }

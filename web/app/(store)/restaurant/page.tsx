@@ -1,10 +1,11 @@
-import Script from "next/script";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { loadRestaurantDetail } from "@/lib/menu-catalog";
+import { COOKIE_CART, COOKIE_CART_SHOP, parseCartJson } from "@/lib/cart-cookies";
 import { RestaurantMenuPage } from "@/components/store/restaurant-menu";
 
-type Props = { searchParams?: Promise<{ id?: string; error?: string }> };
+type Props = { searchParams?: Promise<{ id?: string; error?: string; added?: string }> };
 
 export default async function RestaurantPage({ searchParams }: Props) {
   const p = (await searchParams) ?? {};
@@ -27,27 +28,32 @@ export default async function RestaurantPage({ searchParams }: Props) {
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const { shop, menus } = await loadRestaurantDetail(supabase, shopId);
   if (!shop) {
     redirect("/");
   }
 
+  const cookieStore = await cookies();
+  const cart = parseCartJson(cookieStore.get(COOKIE_CART)?.value);
+  const cartShopId = parseInt(cookieStore.get(COOKIE_CART_SHOP)?.value ?? "", 10);
+  const hasItems = Object.keys(cart).length > 0;
+  const sameShop = hasItems && cartShopId === shopId;
+
+  const cartQty: Record<string, number> = {};
+  if (sameShop) {
+    for (const [k, line] of Object.entries(cart)) cartQty[k] = Number(line.qty) || 0;
+  }
+
+  const addedId = parseInt(p.added ?? "", 10);
+
   return (
-    <>
-      <RestaurantMenuPage
-        shop={shop}
-        menus={menus}
-        isLoggedIn={!!user}
-        differentShopError={p.error === "different_shop"}
-      />
-      <Script
-        src="/legacy/js/home-carousel-and-modal.js"
-        strategy="afterInteractive"
-      />
-    </>
+    <RestaurantMenuPage
+      shop={shop}
+      menus={menus}
+      differentShopError={p.error === "different_shop"}
+      cartQty={cartQty}
+      otherShopInCart={hasItems && !sameShop}
+      addedId={Number.isFinite(addedId) ? addedId : null}
+    />
   );
 }

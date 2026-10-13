@@ -10,6 +10,7 @@ import {
 } from "@/lib/cart-cookies";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { ClearCartLink } from "@/components/store/clear-cart-link";
+import { QtyStepper } from "@/components/store/cart-controls";
 
 type Props = { searchParams?: Promise<{ error?: string }> };
 
@@ -22,15 +23,22 @@ export default async function CartPage({ searchParams }: Props) {
   const shopId = shopIdRaw ? parseInt(shopIdRaw, 10) : NaN;
 
   let shopName = "";
-  if (Number.isFinite(shopId) && shopId > 0 && isSupabaseConfigured()) {
+  let loggedIn = false;
+  if (isSupabaseConfigured()) {
     try {
       const supabase = await createClient();
-      const { data: r } = await supabase
-        .from("restaurants")
-        .select("name")
-        .eq("id", shopId)
-        .maybeSingle();
-      shopName = (r?.name as string | undefined) ?? "";
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      loggedIn = !!user;
+      if (Number.isFinite(shopId) && shopId > 0) {
+        const { data: r } = await supabase
+          .from("restaurants")
+          .select("name")
+          .eq("id", shopId)
+          .maybeSingle();
+        shopName = (r?.name as string | undefined) ?? "";
+      }
     } catch {
       shopName = "";
     }
@@ -108,72 +116,28 @@ export default async function CartPage({ searchParams }: Props) {
               </p>
             ) : null}
             {prefillNote ? <p className="small text-muted mb-3">{prefillNote}</p> : null}
-            <div className="table-responsive cart-page__scroll">
-              <table className="table table-hover cart-page-table align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th scope="col">Item</th>
-                    <th scope="col" className="text-end">
-                      Price
-                    </th>
-                    <th scope="col" className="text-end cart-page-table__qty">
-                      Qty
-                    </th>
-                    <th scope="col" className="text-end">
-                      Total
-                    </th>
-                    <th scope="col" className="cart-page-table__act">
-                      <span className="visually-hidden">Remove</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lines.map((item) => {
-                    const qty = item.qty;
-                    const lineTotal = Number(item.price) * qty;
-                    const imgPath = item.image
-                      ? `/images/menus/${encodeMenuImagePath(item.image)}`
-                      : "/images/menus/default.png";
-                    return (
-                      <tr key={item.menu_id}>
-                        <td>
-                          <div className="cart-page__line">
-                            <img
-                              src={imgPath}
-                              width={56}
-                              height={56}
-                              className="cart-page__thumb rounded"
-                              style={{ objectFit: "cover" }}
-                              alt=""
-                              loading="lazy"
-                            />
-                            <span className="cart-page__line-name">{item.name}</span>
-                          </div>
-                        </td>
-                        <td className="text-end tabular-nums text-muted">
-                          ₱{Number(item.price).toFixed(2)}
-                        </td>
-                        <td className="text-end cart-page-table__qty fw-semibold tabular-nums">
-                          {qty}
-                        </td>
-                        <td className="text-end fw-semibold tabular-nums">
-                          ₱{lineTotal.toFixed(2)}
-                        </td>
-                        <td className="cart-page-table__act text-end">
-                          <a
-                            href={`/api/cart/remove?id=${item.menu_id}`}
-                            className="btn btn-sm btn-outline-danger cart-page__remove rounded-pill"
-                            aria-label={`Remove ${item.name}`}
-                          >
-                            Remove
-                          </a>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <ul className="kk-cart-list">
+              {lines.map((item) => {
+                const imgPath = item.image
+                  ? `/images/menus/${encodeMenuImagePath(item.image)}`
+                  : "/images/menus/default.png";
+                return (
+                  <li key={item.menu_id} className="kk-cart-line">
+                    <img src={imgPath} alt="" width={64} height={64} className="kk-cart-line__img" loading="lazy" />
+                    <div className="kk-cart-line__info">
+                      <span className="kk-cart-line__name">{item.name}</span>
+                      <span className="kk-cart-line__unit tabular-nums">₱{Number(item.price).toFixed(2)} each</span>
+                    </div>
+                    <div className="kk-cart-line__side">
+                      <span className="kk-cart-line__total tabular-nums">
+                        ₱{(Number(item.price) * item.qty).toFixed(2)}
+                      </span>
+                      <QtyStepper menuId={item.menu_id} qty={item.qty} name={item.name} returnTo="/cart" size="sm" />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
 
             <div className="cart-page__bar">
               <ClearCartLink />
@@ -186,12 +150,29 @@ export default async function CartPage({ searchParams }: Props) {
             </div>
 
             <div className="cart-page__cta">
-              <Link
-                href="/checkout"
-                className="btn btn-dark btn-lg rounded-pill px-4 fw-semibold"
-              >
-                Checkout
-              </Link>
+              {Number.isFinite(shopId) && shopId > 0 ? (
+                <Link href={`/restaurant?id=${shopId}`} className="btn btn-outline-dark btn-lg rounded-pill px-4">
+                  Add more
+                </Link>
+              ) : null}
+              {loggedIn ? (
+                <Link
+                  href="/checkout"
+                  className="btn btn-dark btn-lg rounded-pill px-4 fw-semibold"
+                >
+                  Checkout
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-dark btn-lg rounded-pill px-4 fw-semibold"
+                  data-bs-toggle="modal"
+                  data-bs-target="#kkAuthModal"
+                  data-auth-tab="login"
+                >
+                  Log in to check out
+                </button>
+              )}
             </div>
           </div>
         )}

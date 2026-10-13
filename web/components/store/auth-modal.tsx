@@ -91,7 +91,13 @@ export function AuthModal() {
       return;
     }
     setPendingConfirmEmail(null);
-    window.location.href = '/';
+    // Stay where the customer was (e.g. cart → checkout), minus the login prompt params.
+    const params = new URLSearchParams(window.location.search);
+    params.delete('login');
+    params.delete('auth');
+    params.delete('message');
+    const qs = params.toString();
+    window.location.href = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
   }
 
   function switchToLoginTab(email?: string) {

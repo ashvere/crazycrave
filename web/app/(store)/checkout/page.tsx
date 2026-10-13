@@ -34,7 +34,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Sea
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/?login=required");
+  if (!user) redirect("/cart?login=required");
 
   const cookieStore = await cookies();
   const cart = parseCartJson(cookieStore.get(COOKIE_CART)?.value);

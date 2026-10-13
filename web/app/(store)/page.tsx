@@ -4,6 +4,7 @@ import {
   loadHomeCatalog,
 } from "@/lib/menu-catalog";
 import { HomeIndex } from "@/components/store/home-index";
+import { CartBar } from "@/components/store/cart-controls";
 
 export default async function StoreHomePage() {
   if (!isSupabaseConfigured()) {
@@ -48,6 +49,7 @@ export default async function StoreHomePage() {
   const scheduleMinDate = new Date().toISOString().slice(0, 10);
 
   return (
+    <>
     <HomeIndex
       isLoggedIn={!!user}
       userName={userName}
@@ -57,5 +59,7 @@ export default async function StoreHomePage() {
       scheduleMinDate={scheduleMinDate}
       dataError={shops.length === 0 ? null : null}
     />
+    <CartBar />
+    </>
   );
 }

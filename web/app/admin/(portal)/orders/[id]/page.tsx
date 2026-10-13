@@ -169,15 +169,13 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
 
               {phone ? (
                 <div className="staff-contact">
-                  <span className="staff-contact__number tabular-nums">
-                    <i className="bi bi-telephone-fill" aria-hidden="true" />
-                    {phone}
-                  </span>
-                  <a href={`tel:${phone}`} className="staff-contact__btn staff-contact__btn--call">
-                    <i className="bi bi-telephone" aria-hidden="true" /> Call
-                  </a>
+                  <div className="staff-contact__info">
+                    <span className="staff-contact__label">Customer number</span>
+                    <span className="staff-contact__number tabular-nums">{phone}</span>
+                  </div>
                   <a href={`sms:${phone}`} className="staff-contact__btn">
-                    <i className="bi bi-chat-dots" aria-hidden="true" /> Text
+                    <i className="bi bi-chat-dots-fill" aria-hidden="true" />
+                    Message
                   </a>
                 </div>
               ) : (

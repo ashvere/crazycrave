@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { markOrderChatRead } from "@/lib/order-chat";
 import { isChatClosed } from "@/lib/customer-orders";
 import { OrderChat, type ChatMessage } from "@/components/order-chat";
+import { legacyCss } from "@/lib/legacy-css";
 
 export default async function OrderChatPage({ params }: { params: Promise<{ id: string }> }) {
   const orderId = parseInt((await params).id, 10);
@@ -37,7 +38,7 @@ export default async function OrderChatPage({ params }: { params: Promise<{ id: 
 
   return (
     <main className="kk-chat-page">
-      <link rel="stylesheet" href="/legacy/css/order-chat.css" />
+      <link rel="stylesheet" href={legacyCss("order-chat.css")} />
       <OrderChat
         orderId={orderId}
         myRole="user"

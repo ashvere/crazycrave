@@ -2,6 +2,7 @@ import Script from "next/script";
 import { StoreHeader } from "@/components/store/store-header";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StorefrontBodyClass } from "@/components/store/storefront-body-class";
+import { legacyCss } from "@/lib/legacy-css";
 
 export default function StoreLayout({
   children,
@@ -26,8 +27,8 @@ export default function StoreLayout({
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
         rel="stylesheet"
       />
-      <link href="/legacy/css/style.css" rel="stylesheet" />
-      <link href="/legacy/css/storefront-mobile.css" rel="stylesheet" />
+      <link href={legacyCss("style.css")} rel="stylesheet" />
+      <link href={legacyCss("storefront-mobile.css")} rel="stylesheet" />
       <StorefrontBodyClass />
       <StoreHeader />
       {children}

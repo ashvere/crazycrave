@@ -6,6 +6,7 @@ import { isChatClosed } from "@/lib/customer-orders";
 import { RiderTopbar } from "@/components/rider/rider-topbar";
 import { RiderDockNav } from "@/components/rider/rider-dock-nav";
 import { OrderChat, type ChatMessage } from "@/components/order-chat";
+import { legacyCss } from "@/lib/legacy-css";
 
 export default async function RiderOrderChatPage({ params }: { params: Promise<{ id: string }> }) {
   const orderId = parseInt((await params).id, 10);
@@ -37,7 +38,7 @@ export default async function RiderOrderChatPage({ params }: { params: Promise<{
     <>
       <RiderTopbar displayName={riderName} />
       <main className="kk-chat-page kk-chat-page--rider">
-        <link rel="stylesheet" href="/legacy/css/order-chat.css" />
+        <link rel="stylesheet" href={legacyCss("order-chat.css")} />
         <OrderChat
           orderId={orderId}
           myRole="rider"

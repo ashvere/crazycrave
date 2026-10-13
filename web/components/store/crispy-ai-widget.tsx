@@ -4,6 +4,7 @@ import Script from 'next/script';
 import { useEffect } from 'react';
 import crispyCfg from '@/lib/data/crispy-ai-public.json';
 import { BRAND_LOGO_SRC } from '@/lib/brand';
+import { legacyCss } from '@/lib/legacy-css';
 
 export function CrispyAiWidget() {
   useEffect(() => {
@@ -16,7 +17,7 @@ export function CrispyAiWidget() {
 
   return (
     <>
-      <link rel="stylesheet" href="/legacy/css/crispy-ai.css" />
+      <link rel="stylesheet" href={legacyCss('crispy-ai.css')} />
       <div className="crispy-ai" id="crispyAiRoot" aria-live="polite">
         <button
           type="button"

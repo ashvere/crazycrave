@@ -3,6 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { encodeMenuImagePath } from "@/lib/cart-cookies";
 import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
+import {
+  DeliveryStatusPill,
+  OrderStatusPill,
+  PaymentMethod,
+  PaymentStatusPill,
+} from "@/components/admin/order-badges";
 
 type OrderRow = {
   id: number;
@@ -146,34 +152,24 @@ export default async function AdminDashboardPage() {
                       <td>{order.customer_display_name}</td>
                       <td>₱{Number(order.total).toFixed(2)}</td>
                       <td>
-                        <span className="text-muted small d-block">
-                          {order.payment_method.toUpperCase()}
-                        </span>
-                        <span
-                          className={`badge ${
-                            order.payment_status === "paid"
-                              ? "bg-success"
-                              : "bg-warning text-dark"
-                          }`}
-                        >
-                          {order.payment_status.toUpperCase()}
-                        </span>
+                        <div className="staff-stack">
+                          <PaymentMethod method={order.payment_method} />
+                          <PaymentStatusPill status={order.payment_status} />
+                        </div>
                       </td>
                       <td>
-                        <span className="badge bg-secondary">{order.order_status}</span>
+                        <OrderStatusPill status={order.order_status} />
                       </td>
                       <td>
-                        <span className="badge bg-secondary">
-                          {order.delivery_status.replace(/_/g, " ")}
-                        </span>
+                        <DeliveryStatusPill status={order.delivery_status} />
                       </td>
                       <td>
                         <div className="d-flex flex-wrap gap-2 align-items-center">
                           <Link
                             href={`/admin/orders/${order.id}`}
-                            className="btn btn-sm btn-outline-primary"
+                            className="staff-view-btn"
                           >
-                            View
+                            View <i className="bi bi-chevron-right" aria-hidden="true" />
                           </Link>
                           <AssignRiderForm
                             orderId={order.id}
@@ -283,14 +279,14 @@ export default async function AdminDashboardPage() {
                     <td>{order.customer_display_name}</td>
                     <td>₱{Number(order.total).toFixed(2)}</td>
                     <td>
-                      <span className="badge bg-secondary">{order.order_status}</span>
+                      <OrderStatusPill status={order.order_status} />
                     </td>
                     <td>
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="btn btn-sm btn-outline-primary"
+                        className="staff-view-btn"
                       >
-                        View
+                        View <i className="bi bi-chevron-right" aria-hidden="true" />
                       </Link>
                     </td>
                   </tr>

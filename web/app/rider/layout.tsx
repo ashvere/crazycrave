@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { legacyCss } from "@/lib/legacy-css";
 
 export const metadata: Metadata = {
   title: {
@@ -27,7 +28,7 @@ export default function RiderRootLayout({
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
         rel="stylesheet"
       />
-      <link href="/legacy/css/rider-portal.css" rel="stylesheet" />
+      <link href={legacyCss("rider-portal.css")} rel="stylesheet" />
       {children}
     </>
   );

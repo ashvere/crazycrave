@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { AuthModal, AuthModalOpener } from "@/components/store/auth-modal";
 import { CrispyAiWidget } from "@/components/store/crispy-ai-widget";
@@ -87,7 +88,9 @@ export function StoreFooter() {
       </footer>
 
       <AuthModal />
-      <AuthModalOpener />
+      <Suspense fallback={null}>
+        <AuthModalOpener />
+      </Suspense>
       <CrispyAiWidget />
     </>
   );

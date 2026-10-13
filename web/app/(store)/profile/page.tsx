@@ -14,7 +14,7 @@ export default async function ProfilePage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/?login=required");
+  if (!user) redirect("/?login=required&next=/profile");
 
   const { data: profile, error: pe } = await supabase
     .from("profiles")

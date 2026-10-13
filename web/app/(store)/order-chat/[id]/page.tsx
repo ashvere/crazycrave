@@ -13,7 +13,7 @@ export default async function OrderChatPage({ params }: { params: Promise<{ id: 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/?login=required");
+  if (!user) redirect(`/?login=required&next=/order-chat/${orderId}`);
 
   const { data: order } = await supabase
     .from("orders")

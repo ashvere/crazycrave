@@ -18,7 +18,7 @@ export default async function MyOrdersPage({ searchParams }: { searchParams: Sea
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/?login=required");
+  if (!user) redirect("/?login=required&next=/my-orders");
 
   const { data: profile } = await supabase
     .from("profiles")

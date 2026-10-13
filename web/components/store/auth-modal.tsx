@@ -1,13 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { authErrorMessage, ensureAuthErrorText } from '@/lib/auth-errors';
 import { BRAND_LOGO_SRC } from '@/lib/brand';
 
 const SIGNUP_TIMEOUT_MS = 20_000;
 
+/** Same-site path to return to after login (`?next=`), or null. */
+function safeNextPath(raw: string | null): string | null {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\')) return null;
+  return raw;
+}
+
 export function AuthModalOpener() {
+  // Re-run on client-side navigations too (the footer stays mounted), e.g. a tab-bar
+  // tap on /my-orders that the server redirects to /?login=required.
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const needOpen =
@@ -37,7 +48,7 @@ export function AuthModalOpener() {
     }, 100);
 
     return () => window.clearInterval(id);
-  }, []);
+  }, [searchParams]);
 
   return null;
 }
@@ -91,13 +102,16 @@ export function AuthModal() {
       return;
     }
     setPendingConfirmEmail(null);
-    // Stay where the customer was (e.g. cart → checkout), minus the login prompt params.
+    // Go to the page that asked for login (?next=), else stay where the customer was
+    // (e.g. cart → checkout), minus the login prompt params.
     const params = new URLSearchParams(window.location.search);
+    const next = safeNextPath(params.get('next'));
     params.delete('login');
     params.delete('auth');
     params.delete('message');
+    params.delete('next');
     const qs = params.toString();
-    window.location.href = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+    window.location.href = next ?? `${window.location.pathname}${qs ? `?${qs}` : ''}`;
   }
 
   function switchToLoginTab(email?: string) {

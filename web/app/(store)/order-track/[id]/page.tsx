@@ -26,7 +26,7 @@ export default async function OrderTrackPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/?login=required");
+  if (!user) redirect(`/?login=required&next=/order-track/${orderId}`);
 
   const { data: order, error } = await supabase
     .from("orders")

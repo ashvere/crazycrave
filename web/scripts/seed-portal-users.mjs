@@ -4,7 +4,8 @@
  * Run from web/ (requires SUPABASE_SERVICE_ROLE_KEY in .env.local):
  *   node --env-file=.env.local scripts/seed-portal-users.mjs
  *
- * Do not commit production passwords. Change these after demos.
+ * Passwords come from SEED_ADMIN_PASSWORD and SEED_RIDER_PASSWORD in .env.local
+ * (never commit them). Re-running this resets both accounts to those passwords.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -12,7 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 const USERS = [
   {
     email: "admin@crispy.com",
-    password: "letmein123",
+    password: process.env.SEED_ADMIN_PASSWORD,
     displayName: "Platform Admin",
     role: "admin",
     approvalStatus: "approved",
@@ -20,7 +21,7 @@ const USERS = [
   },
   {
     email: "rider@crispy.com",
-    password: "letmeride123",
+    password: process.env.SEED_RIDER_PASSWORD,
     displayName: "Demo Rider",
     role: "rider",
     approvalStatus: "approved",
@@ -43,6 +44,17 @@ if (!url || !serviceKey) {
       "Add them to web/.env.local (service role: Supabase → Settings → API)."
   );
   process.exit(1);
+}
+
+for (const spec of USERS) {
+  if (!spec.password || spec.password.length < 12) {
+    console.error(
+      `Set a password of at least 12 characters for ${spec.email}:
+` +
+        "  SEED_ADMIN_PASSWORD=... and SEED_RIDER_PASSWORD=... in web/.env.local"
+    );
+    process.exit(1);
+  }
 }
 
 const admin = createClient(url, serviceKey, {

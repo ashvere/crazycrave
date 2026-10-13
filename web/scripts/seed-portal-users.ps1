@@ -23,6 +23,12 @@ if (-not $url -or -not $key) {
     Write-Error "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local"
 }
 
+$adminPw = $vars["SEED_ADMIN_PASSWORD"]
+$riderPw = $vars["SEED_RIDER_PASSWORD"]
+if (-not $adminPw -or $adminPw.Length -lt 12 -or -not $riderPw -or $riderPw.Length -lt 12) {
+    Write-Error "Set SEED_ADMIN_PASSWORD and SEED_RIDER_PASSWORD (12+ characters) in .env.local"
+}
+
 $base = $url.TrimEnd("/")
 $authHeaders = @{
     apikey         = $key
@@ -39,7 +45,7 @@ $restHeaders = @{
 $users = @(
     @{
         email          = "admin@crispy.com"
-        password       = "letmein123"
+        password       = $adminPw
         displayName    = "Platform Admin"
         role           = "admin"
         approvalStatus = "approved"
@@ -47,7 +53,7 @@ $users = @(
     },
     @{
         email          = "rider@crispy.com"
-        password       = "letmeride123"
+        password       = $riderPw
         displayName    = "Demo Rider"
         role           = "rider"
         approvalStatus = "approved"
@@ -136,5 +142,5 @@ foreach ($spec in $users) {
 }
 
 Write-Host "Done."
-Write-Host 'Staff: /admin/login  -> admin@crispy.com / letmein123'
-Write-Host 'Rider: /rider/login -> rider@crispy.com / letmeride123'
+Write-Host 'Staff: /admin/login  -> admin@crispy.com (password from SEED_ADMIN_PASSWORD)'
+Write-Host 'Rider: /rider/login -> rider@crispy.com (password from SEED_RIDER_PASSWORD)'

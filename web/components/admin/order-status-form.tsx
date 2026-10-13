@@ -1,8 +1,7 @@
 "use client";
 
 import { adminUpdateOrderStatus } from "@/app/admin/actions";
-
-const STATUSES = ["pending", "preparing", "delivering", "completed", "cancelled"] as const;
+import { ORDER_STATUS_OPTIONS } from "@/components/admin/order-badges";
 
 export function OrderStatusForm({
   orderId,
@@ -11,26 +10,24 @@ export function OrderStatusForm({
   orderId: number;
   currentStatus: string;
 }) {
-  const safe =
-    STATUSES.includes(currentStatus as (typeof STATUSES)[number]) ? currentStatus : "pending";
+  const safe = ORDER_STATUS_OPTIONS.some((o) => o.value === currentStatus) ? currentStatus : "pending";
 
   return (
-    <form action={adminUpdateOrderStatus} className="mt-3 d-flex flex-wrap align-items-center gap-2">
+    <form action={adminUpdateOrderStatus} className="staff-status-form">
       <input type="hidden" name="order_id" value={orderId} />
-      <label className="small text-muted mb-0" htmlFor={`ord-st-${orderId}`}>
-        Update status
+      <label className="staff-status-form__label" htmlFor={`ord-st-${orderId}`}>
+        <i className="bi bi-arrow-repeat" aria-hidden="true" /> Change status
       </label>
       <select
         id={`ord-st-${orderId}`}
         name="order_status"
-        className="form-select form-select-sm"
-        style={{ maxWidth: "12rem" }}
+        className="form-select form-select-sm staff-status-form__select"
         defaultValue={safe}
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
       >
-        {STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {s}
+        {ORDER_STATUS_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
           </option>
         ))}
       </select>

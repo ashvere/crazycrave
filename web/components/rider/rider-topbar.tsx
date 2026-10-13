@@ -23,9 +23,10 @@ export function RiderTopbar({ displayName }: RiderTopbarProps) {
             <i className="bi bi-person-circle" aria-hidden="true" />
             <span>{displayName}</span>
           </span>
-          <Link href="/rider/logout" className="rider-topbar__logout">
+          {/* Plain <a>, not <Link>: Next prefetches visible Links, and prefetching /logout signs the user out. */}
+          <a href="/rider/logout" className="rider-topbar__logout">
             Log out
-          </Link>
+          </a>
         </div>
       </div>
     </header>

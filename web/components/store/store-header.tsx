@@ -125,10 +125,11 @@ export async function StoreHeader() {
                   {displayName}
                 </span>
               )}
-              <Link href="/logout" className="logout-btn" aria-label="Log out">
+              {/* Plain <a>, not <Link>: Next prefetches visible Links, and prefetching /logout signs the user out. */}
+              <a href="/logout" className="logout-btn" aria-label="Log out">
                 <i className="bi bi-box-arrow-right kk-show-phone" aria-hidden="true" />
                 <span className="kk-hide-phone">Log out</span>
-              </Link>
+              </a>
             </>
           ) : (
             <button

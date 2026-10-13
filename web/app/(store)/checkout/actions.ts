@@ -18,6 +18,7 @@ import {
   STORE_PICKUP_BARANGAY,
   isDeliveryOption,
   isPaymentOption,
+  normalizePhPhone,
   riderFeeFor,
   roundMoney,
 } from "@/lib/checkout";
@@ -59,6 +60,8 @@ export async function placeOrder(formData: FormData): Promise<void> {
   const payment = isPaymentOption(payRaw) ? payRaw : "cod";
   const gcashRef = String(formData.get("gcash_ref") ?? "").trim().slice(0, 64);
 
+  const phone = normalizePhPhone(String(formData.get("customer_phone") ?? ""));
+  if (!phone) fail("phone");
   if (fulfillment === "delivery" && deliveryAddress === "") fail("address");
   if (fulfillment === "pickup") {
     barangay = STORE_PICKUP_BARANGAY;
@@ -130,25 +133,33 @@ export async function placeOrder(formData: FormData): Promise<void> {
     String(profile?.display_name ?? "").trim() || user.email?.split("@")[0] || "Customer";
 
   /* INSERT ORDER */
-  const { data: order, error: orderErr } = await admin
-    .from("orders")
-    .insert({
-      customer_id: user.id,
-      customer_display_name: displayName.slice(0, 120),
-      shop_id: shopId,
-      total,
-      payment_method: paymentMethod,
-      payment_status: paymentStatus,
-      order_status: "pending",
-      delivery_status: "assigned",
-      barangay,
-      delivery_address: deliveryAddress,
-      distance_km: distanceKm,
-      rider_fee: riderFee,
-      pickup_time: pickupTime,
-    })
-    .select("id")
-    .single();
+  const orderRow = {
+    customer_id: user.id,
+    customer_display_name: displayName.slice(0, 120),
+    shop_id: shopId,
+    total,
+    payment_method: paymentMethod,
+    payment_status: paymentStatus,
+    order_status: "pending",
+    delivery_status: "assigned",
+    barangay,
+    delivery_address: deliveryAddress,
+    distance_km: distanceKm,
+    rider_fee: riderFee,
+    pickup_time: pickupTime,
+    customer_phone: phone,
+  };
+  let { data: order, error: orderErr } = await admin.from("orders").insert(orderRow).select("id").single();
+  if (orderErr && /customer_phone/.test(orderErr.message)) {
+    // Database not migrated yet (20240516000013): keep orders flowing, phone goes in the address notes.
+    const { customer_phone: _omit, ...legacyRow } = orderRow;
+    void _omit;
+    ({ data: order, error: orderErr } = await admin
+      .from("orders")
+      .insert({ ...legacyRow, delivery_address: `${deliveryAddress}\n\nContact: ${phone}` })
+      .select("id")
+      .single());
+  }
   if (orderErr || !order) fail("failed");
   const orderId = Number(order.id);
 
@@ -164,6 +175,16 @@ export async function placeOrder(formData: FormData): Promise<void> {
   /* Auto-assign delivery orders to an available rider (unassigned orders stay in the rider pool) */
   if (fulfillment === "delivery") {
     await autoAssignRider(admin, orderId, shopId).catch(() => null);
+  }
+
+  /* Remember the number for next time (only if the profile has none yet). */
+  const { data: cp } = await supabase
+    .from("customer_profiles")
+    .select("phone")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!cp?.phone) {
+    await supabase.from("customer_profiles").upsert({ user_id: user.id, phone }, { onConflict: "user_id" });
   }
 
   /* CLEAR CART */

@@ -167,3 +167,9 @@ export function customerDeliveryStatusLabel(order: CustomerOrderRow): string {
       return order.rider_id ? "Rider assigned" : "Waiting for rider";
   }
 }
+
+/** Order chat is for active deliveries; after completion/cancellation the history stays readable. */
+export function isChatClosed(order: { order_status?: string | null; delivery_status?: string | null }): boolean {
+  const s = String(order.order_status ?? "").toLowerCase();
+  return s === "completed" || s === "cancelled" || order.delivery_status === "delivered";
+}

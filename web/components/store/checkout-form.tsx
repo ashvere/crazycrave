@@ -18,6 +18,7 @@ export type CheckoutInitial = {
   fulfillment: "delivery" | "pickup";
   barangay: string;
   address: string;
+  phone: string;
   time: string;
   notes: string;
   deliveryOption: DeliveryOption;
@@ -208,6 +209,27 @@ export function CheckoutForm({
                   ))}
                 </div>
               ) : null}
+            </div>
+
+            <div className="checkout-page__field">
+              <label className="checkout-page__label" htmlFor="customer_phone">
+                Mobile number
+              </label>
+              <input
+                type="tel"
+                name="customer_phone"
+                id="customer_phone"
+                className="form-control checkout-page__control"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="09XX XXX XXXX"
+                title="Philippine number, e.g. 0917 123 4567"
+                required
+                defaultValue={initial.phone}
+              />
+              <p className="small text-muted mt-1 mb-0">
+                {pickup ? "The shop" : "Your rider"} will use this to reach you about the order.
+              </p>
             </div>
 
             <div className="checkout-page__field">

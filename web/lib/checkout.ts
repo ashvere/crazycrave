@@ -29,3 +29,15 @@ export function riderFeeFor(distanceKm: number, option: DeliveryOption): number 
 export function roundMoney(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+/**
+ * Normalizes a Philippine contact number to local format (09171234567 / 0331234567).
+ * Accepts spaces, dashes and +63 / 63 prefixes. Returns null if it isn't a plausible PH number.
+ */
+export function normalizePhPhone(raw: string): string | null {
+  let d = raw.replace(/[\s\-().]/g, "");
+  if (d.startsWith("+63")) d = `0${d.slice(3)}`;
+  else if (/^63\d{10}$/.test(d)) d = `0${d.slice(2)}`;
+  else if (/^9\d{9}$/.test(d)) d = `0${d}`;
+  return /^0\d{9,10}$/.test(d) ? d : null;
+}

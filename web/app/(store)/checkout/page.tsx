@@ -20,6 +20,7 @@ import { CheckoutForm, type CheckoutInitial } from "@/components/store/checkout-
 
 const ERRORS: Record<string, string> = {
   address: "Please enter your street or landmark for delivery.",
+  phone: "Please enter a valid mobile number (e.g. 0917 123 4567) so we can reach you.",
   location: "Please choose a barangay from the list (Pototan, Iloilo only).",
   schedule: "Please choose a valid date and time for scheduled delivery.",
   items: "Some items in your cart are no longer available. Please review your cart.",
@@ -48,14 +49,12 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Sea
     pf = {};
   }
 
+  const profile = await getCustomerProfile(supabase, user.id);
   let payment: PaymentOption = "cod";
   if (pf.payment && isPaymentOption(pf.payment)) {
     payment = pf.payment;
-  } else {
-    const profile = await getCustomerProfile(supabase, user.id);
-    if (profile.preferred_payment && isPaymentOption(profile.preferred_payment)) {
-      payment = profile.preferred_payment;
-    }
+  } else if (profile.preferred_payment && isPaymentOption(profile.preferred_payment)) {
+    payment = profile.preferred_payment;
   }
 
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(new Date());
@@ -66,6 +65,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Sea
     fulfillment,
     barangay: Object.prototype.hasOwnProperty.call(BARANGAY_DISTANCES, barangay) ? barangay : "",
     address: (pf.address ?? "").trim(),
+    phone: profile.phone ?? "",
     time: /^\d{2}:\d{2}/.test(pf.time ?? "") ? pf.time!.slice(0, 5) : "12:00",
     notes: (pf.notes ?? "").trim(),
     deliveryOption: pf.delivery_option && isDeliveryOption(pf.delivery_option) ? pf.delivery_option : "standard",

@@ -4,6 +4,7 @@ export type RiderOrderRow = {
   id: number;
   customer_id: string | null;
   customer_display_name: string;
+  customer_phone?: string | null;
   shop_id: number;
   total: number;
   payment_method: string;

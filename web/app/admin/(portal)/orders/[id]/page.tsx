@@ -90,8 +90,14 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
               <span>Delivery</span>
             </div>
             <div className="staff-panel__body small">
-              <p className="mb-1">{order.delivery_address}</p>
+              <p className="mb-1" style={{ whiteSpace: "pre-wrap" }}>{order.delivery_address}</p>
               <p className="text-muted mb-0">{order.barangay}</p>
+              {order.customer_phone ? (
+                <p className="mb-0 mt-2">
+                  <i className="bi bi-telephone me-1" aria-hidden="true" />
+                  <a href={`tel:${order.customer_phone}`}>{order.customer_phone}</a>
+                </p>
+              ) : null}
             </div>
           </section>
         </div>

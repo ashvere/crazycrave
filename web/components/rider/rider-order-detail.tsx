@@ -40,6 +40,22 @@ export function RiderOrderDetail({ order, items }: Props) {
           <dl className="rider-dash-detail-grid">
             <dt>Customer</dt>
             <dd className="fw-medium">{order.customer_display_name || "Customer"}</dd>
+            {order.customer_phone ? (
+              <>
+                <dt>Contact</dt>
+                <dd className="d-flex flex-wrap align-items-center gap-2">
+                  <span className="tabular-nums fw-medium">{order.customer_phone}</span>
+                  <a href={`tel:${order.customer_phone}`} className="btn btn-sm btn-success rounded-pill">
+                    <i className="bi bi-telephone-fill me-1" aria-hidden="true" />
+                    Call
+                  </a>
+                  <a href={`sms:${order.customer_phone}`} className="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i className="bi bi-chat-text me-1" aria-hidden="true" />
+                    Text
+                  </a>
+                </dd>
+              </>
+            ) : null}
             <dt>Barangay</dt>
             <dd>{order.barangay}</dd>
             <dt>Address</dt>
@@ -56,6 +72,13 @@ export function RiderOrderDetail({ order, items }: Props) {
             <dd className="tabular-nums fw-bold fs-5">₱{Number(order.total).toFixed(2)}</dd>
           </dl>
           <div className="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
+            <Link
+              href={`/rider/order/${oid}/chat`}
+              className="btn btn-sm btn-dark rider-btn-pill"
+            >
+              <i className="bi bi-chat-dots me-1" aria-hidden="true" />
+              Chat with customer
+            </Link>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsDest)}`}
               target="_blank"

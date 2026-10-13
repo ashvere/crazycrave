@@ -25,6 +25,7 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
     pathname.startsWith("/admin/shops") ||
     pathname.startsWith("/admin/shop"); // future parity with add/edit
   const stats = pathname.startsWith("/admin/stats");
+  const riders = pathname.startsWith("/admin/riders");
   const kds = pathname.startsWith("/admin/kds");
   const pos = pathname.startsWith("/admin/pos");
   const menu = pathname.startsWith("/admin/menus");
@@ -62,6 +63,10 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
               <Link href="/admin/shops" className={linkClass(shops)}>
                 <i className="bi bi-shop" aria-hidden="true" />
                 <span>Shops</span>
+              </Link>
+              <Link href="/admin/riders" className={linkClass(riders)}>
+                <i className="bi bi-bicycle" aria-hidden="true" />
+                <span>Riders</span>
               </Link>
               <Link href="/admin/stats" className={linkClass(stats)}>
                 <i className="bi bi-bar-chart" aria-hidden="true" />

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 export default function ProfileBodyClassLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.classList.add("profile-layout");
     return () => document.body.classList.remove("profile-layout");
   }, []);

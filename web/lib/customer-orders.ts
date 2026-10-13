@@ -129,6 +129,23 @@ export function customerTrackingSteps(order: CustomerOrderRow): TrackStep[] {
   });
 }
 
+/** Same format as PHP `date('M j, Y · g:i A', …)` on my-orders.php */
+export function formatCustomerOrderDate(createdAt: string): string {
+  const d = new Date(createdAt);
+  if (Number.isNaN(d.getTime())) return createdAt;
+  const date = d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${date} · ${time}`;
+}
+
 export function customerDeliveryStatusLabel(order: CustomerOrderRow): string {
   const orderStatus = String(order.order_status ?? "pending").toLowerCase();
   const deliveryStatus = String(order.delivery_status ?? "assigned").toLowerCase();

@@ -1,6 +1,7 @@
 import Script from "next/script";
 import { StoreHeader } from "@/components/store/store-header";
 import { StoreFooter } from "@/components/store/store-footer";
+import { StorefrontBodyClass } from "@/components/store/storefront-body-class";
 
 export default function StoreLayout({
   children,
@@ -26,6 +27,7 @@ export default function StoreLayout({
         rel="stylesheet"
       />
       <link href="/legacy/css/style.css" rel="stylesheet" />
+      <StorefrontBodyClass />
       <StoreHeader />
       {children}
       <StoreFooter />

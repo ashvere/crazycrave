@@ -8,7 +8,8 @@
   --accent: #c9a227;
 }
 
-body {
+/* Storefront pages use /legacy/css/style.css (see body.kk-storefront). */
+body:not(.kk-storefront) {
   color: var(--foreground);
   background: var(--background);
 }

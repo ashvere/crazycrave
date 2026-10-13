@@ -3,6 +3,7 @@ import {
   customerCanCancel,
   customerDeliveryStatusLabel,
   customerTrackingSteps,
+  formatCustomerOrderDate,
   type CustomerOrderRow,
 } from "@/lib/customer-orders";
 
@@ -96,13 +97,7 @@ export function MyOrdersView({ orders, flash }: Props) {
                   )}
 
                   <p className="my-orders-card__meta small text-muted mb-0">
-                    {new Date(order.created_at).toLocaleString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+                    {formatCustomerOrderDate(order.created_at)}
                     {" · "}
                     {String(order.payment_method).toUpperCase()}
                     {order.payment_status === "paid" ? (
@@ -121,7 +116,7 @@ export function MyOrdersView({ orders, flash }: Props) {
                     {order.rider_id && !isCancelled ? (
                       <Link
                         href={`/order-chat/${orderId}`}
-                        className="btn btn-sm btn-outline-dark my-orders-msg-btn position-relative"
+                        className="btn btn-sm btn-outline-dark my-orders-msg-btn"
                       >
                         <i className="bi bi-chat-dots" aria-hidden="true" />
                         {unread > 0 ? (

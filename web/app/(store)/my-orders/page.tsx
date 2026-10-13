@@ -63,7 +63,7 @@ export default async function MyOrdersPage({ searchParams }: { searchParams: Sea
       message:
         "Could not load orders with your account permissions. Run supabase/fix-customer-orders-policies-only.sql in the SQL Editor (role: postgres).",
     };
-  } else if (usedAdminFallback) {
+  } else if (usedAdminFallback && rawOrders.length > 0) {
     flash = {
       kind: "warning",
       message:

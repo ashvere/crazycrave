@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getStaffSession } from "@/lib/staff-session";
-import { StaffLoginBuildLabel } from "@/components/admin/staff-login-build-label";
 import { StaffLoginForm } from "@/components/admin/staff-login-form";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -30,7 +29,6 @@ export default async function AdminLoginPage() {
       fallback={<p className="text-center text-muted py-5">Loading…</p>}
     >
       <StaffLoginForm />
-      <StaffLoginBuildLabel />
     </Suspense>
   );
 }

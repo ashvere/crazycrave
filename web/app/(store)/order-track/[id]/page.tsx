@@ -10,7 +10,7 @@ import {
   type CustomerOrderRow,
 } from "@/lib/customer-orders";
 
-type Search = Promise<{ cancelled?: string; cancel_error?: string }>;
+type Search = Promise<{ cancelled?: string; cancel_error?: string; placed?: string }>;
 
 export default async function OrderTrackPage({
   params,
@@ -57,7 +57,12 @@ export default async function OrderTrackPage({
 
   const sp = await searchParams;
   let alert: { kind: "success" | "warning"; message: string } | null = null;
-  if (sp.cancelled === "1") {
+  if (sp.placed === "1") {
+    alert = {
+      kind: "success",
+      message: "Order placed! The shop has received it — you can follow its progress here.",
+    };
+  } else if (sp.cancelled === "1") {
     alert = { kind: "success", message: "Your order has been cancelled." };
   } else if (sp.cancel_error === "not_allowed") {
     alert = { kind: "warning", message: "This order can no longer be cancelled." };

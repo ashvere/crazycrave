@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/staff-session";
 import { setRiderApproval } from "./actions";
+import { Stars } from "@/components/stars";
+import { riderRatings } from "@/lib/ratings";
 
 type Tab = "pending" | "approved" | "rejected";
 const TABS: { key: Tab; label: string }[] = [
@@ -63,7 +65,7 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
   const ids = list.map((r) => String(r.id));
   const shopName = new Map((shops ?? []).map((s) => [Number(s.id), String(s.name)]));
 
-  const [{ data: details }, { data: docs }, emails] = await Promise.all([
+  const [{ data: details }, { data: docs }, emails, ratings] = await Promise.all([
     ids.length
       ? admin.from("rider_profiles").select("user_id, phone, vehicle_type, vehicle_plate").in("user_id", ids)
       : Promise.resolve({ data: [] as { user_id: string; phone: string | null; vehicle_type: string; vehicle_plate: string | null }[] }),
@@ -73,6 +75,7 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
     Promise.all(
       ids.map(async (id) => [id, (await admin.auth.admin.getUserById(id)).data.user?.email ?? ""] as const)
     ),
+    riderRatings(admin, tab === "approved" ? ids : []),
   ]);
 
   // Private bucket: short-lived links so documents can be viewed without making them public.
@@ -156,6 +159,24 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
                             <dd className="col-7 col-sm-8 mb-1">
                               {r.restaurant_id ? shopName.get(Number(r.restaurant_id)) ?? "Shop" : "All shops"}
                             </dd>
+                            {ratings.available ? (
+                              <>
+                                <dt className="col-5 col-sm-4 text-muted fw-normal">Rating</dt>
+                                <dd className="col-7 col-sm-8 mb-1">
+                                  {ratings.byRider.get(id) ? (
+                                    <span className="d-inline-flex align-items-center gap-2">
+                                      <Stars value={ratings.byRider.get(id)!.avg} size="sm" />
+                                      <span className="tabular-nums fw-semibold">
+                                        {ratings.byRider.get(id)!.avg.toFixed(1)}
+                                      </span>
+                                      <span className="text-muted">({ratings.byRider.get(id)!.count})</span>
+                                    </span>
+                                  ) : (
+                                    <span className="text-muted">No ratings yet</span>
+                                  )}
+                                </dd>
+                              </>
+                            ) : null}
                           </>
                         ) : null}
                       </dl>

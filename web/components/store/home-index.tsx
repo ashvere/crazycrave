@@ -65,7 +65,20 @@ type HomeIndexProps = {
   picksConfig: PicksConfig;
   scheduleMinDate: string;
   dataError: string | null;
+  /** Average food rating per shop id (only shops with ratings). */
+  shopRatings?: Record<number, { avg: number; count: number }>;
 };
+
+function ShopRating({ rating }: { rating?: { avg: number; count: number } }) {
+  if (!rating || rating.count === 0) return null;
+  return (
+    <span className="shop-rating" aria-label={`Rated ${rating.avg.toFixed(1)} out of 5 from ${rating.count} review${rating.count === 1 ? "" : "s"}`}>
+      <i className="bi bi-star-fill" aria-hidden="true" />
+      <strong>{rating.avg.toFixed(1)}</strong>
+      <span>({rating.count})</span>
+    </span>
+  );
+}
 
 export function HomeIndex({
   isLoggedIn,
@@ -75,6 +88,7 @@ export function HomeIndex({
   picksConfig,
   scheduleMinDate,
   dataError,
+  shopRatings = {},
 }: HomeIndexProps) {
   const splashSrc = "/images/splash_art_official.png";
   const barangay = barangayMap as Record<string, number>;
@@ -172,7 +186,9 @@ export function HomeIndex({
                           <div className="shop-info">
                             <h3>{shop.name}</h3>
                             <p>{shop.description}</p>
-                            <small>Delivery {shop.delivery_time}</small>
+                            <small>
+                              Delivery {shop.delivery_time} <ShopRating rating={shopRatings[sid]} />
+                            </small>
                           </div>
                         </a>
                         {stripMenus.length > 0 ? (
@@ -256,6 +272,7 @@ export function HomeIndex({
                             <span className="home-shop-card__meta">
                               <i className="bi bi-clock" aria-hidden="true" />
                               Delivery {shop.delivery_time}
+                              <ShopRating rating={shopRatings[sid]} />
                             </span>
                           </span>
                         </a>

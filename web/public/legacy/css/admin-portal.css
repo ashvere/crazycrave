@@ -2297,3 +2297,26 @@ body.pos-fullscreen.pos-page {
     font-size: 0.875rem;
     color: var(--staff-text);
 }
+
+/* Star ratings */
+.kk-stars {
+    display: inline-flex;
+    gap: 0.1rem;
+    color: #f59e0b;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.kk-stars--md {
+    font-size: 1.05rem;
+}
+
+.kk-stars--sm {
+    font-size: 0.85rem;
+}
+
+.staff-review {
+    margin: 0.85rem 0 0;
+    font-style: italic;
+    color: var(--staff-text);
+}

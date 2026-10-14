@@ -2923,3 +2923,30 @@ a.rider-list__row:hover {
     font-size: 0.85rem;
     white-space: nowrap;
 }
+
+/* Star ratings */
+.kk-stars {
+    display: inline-flex;
+    gap: 0.1rem;
+    color: #f59e0b;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.kk-stars--md {
+    font-size: 1.05rem;
+}
+
+.kk-stars--sm {
+    font-size: 0.85rem;
+}
+
+.rider-star {
+    font-size: 0.85em;
+    color: #f59e0b;
+}
+
+.rider-review__text {
+    white-space: normal;
+    font-style: italic;
+}

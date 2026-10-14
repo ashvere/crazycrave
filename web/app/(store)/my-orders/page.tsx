@@ -4,6 +4,7 @@ import { fetchCustomerOrders } from "@/lib/customer-orders-fetch";
 import { customerChatUnreadByOrder } from "@/lib/order-messages";
 import { MyOrdersView } from "@/components/store/my-orders-view";
 import { CancelOrderModal } from "@/components/store/cancel-order-modal";
+import { canRate, fetchOrderRatings } from "@/lib/ratings";
 import type { CustomerOrderWithMeta } from "@/components/store/my-orders-view";
 
 export const dynamic = "force-dynamic";
@@ -40,9 +41,16 @@ export default async function MyOrdersPage({ searchParams }: { searchParams: Sea
     unreadMap = new Map();
   }
 
+  const { available: ratingsOn, byOrder: ratings } = await fetchOrderRatings(
+    supabase,
+    rawOrders.filter(canRate).map((o) => o.id)
+  );
+
   const orders: CustomerOrderWithMeta[] = rawOrders.map((o) => ({
     ...o,
     chatUnread: o.rider_id ? (unreadMap.get(o.id) ?? 0) : 0,
+    rateable: ratingsOn && canRate(o),
+    myFoodRating: ratings.get(o.id)?.food_rating ?? null,
   }));
 
   const sp = await searchParams;

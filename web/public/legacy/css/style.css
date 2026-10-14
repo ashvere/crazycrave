@@ -4839,3 +4839,192 @@ button.register-btn {
         border: 1px solid #ccc;
     }
 }
+
+/* Star ratings */
+.kk-stars {
+    display: inline-flex;
+    gap: 0.1rem;
+    color: #f59e0b;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.kk-stars--md {
+    font-size: 1.05rem;
+}
+
+.kk-stars--sm {
+    font-size: 0.85rem;
+}
+
+/* Rate your order (order tracking) */
+.order-track-rate {
+    margin-top: 1rem;
+    padding: 1.15rem;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    scroll-margin-top: calc(var(--header-h, 64px) + 12px);
+}
+
+.order-track-rate__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.order-track-rate__title .bi {
+    color: #f59e0b;
+}
+
+.order-track-rate__thanks {
+    margin: -0.35rem 0 0.75rem;
+    color: #15803d;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.order-track-rate__given {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    row-gap: 0.4rem;
+    margin: 0;
+    align-items: center;
+}
+
+.order-track-rate__given dt {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.order-track-rate__given dd {
+    margin: 0;
+}
+
+.order-track-rate__comment {
+    margin: 0.75rem 0 0;
+    font-style: italic;
+    color: #334155;
+}
+
+.kk-rate {
+    display: grid;
+    gap: 1rem;
+}
+
+.kk-rate__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+.kk-rate__label {
+    float: none;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.kk-rate__optional {
+    margin-left: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kk-rate__stars {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.kk-rate__star {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    margin: 0;
+    border-radius: 10px;
+    color: #f59e0b;
+    font-size: 1.75rem;
+    cursor: pointer;
+    transition: transform 0.08s ease;
+}
+
+.kk-rate__star:hover {
+    transform: scale(1.08);
+}
+
+.kk-rate__star:has(input:focus-visible) {
+    outline: 3px solid rgba(245, 158, 11, 0.45);
+    outline-offset: 1px;
+}
+
+.kk-rate__word {
+    margin-left: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.kk-rate__error {
+    margin: 0;
+    color: #b91c1c;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.kk-rate__submit {
+    justify-self: start;
+    min-height: 44px;
+    padding-inline: 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+/* My orders */
+.my-orders-rate-btn {
+    font-weight: 600;
+}
+
+.my-orders-rated {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    background: #fffbeb;
+    text-decoration: none;
+}
+
+/* Shop cards */
+.shop-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: 0.4rem;
+    font-size: 0.85em;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.shop-rating .bi {
+    color: #f59e0b;
+}
+
+.shop-rating span {
+    color: #94a3b8;
+}

@@ -5,6 +5,8 @@ import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
 import { proofImageUrl } from "@/lib/delivery-proof";
+import { Stars } from "@/components/stars";
+import { fetchOrderRatings } from "@/lib/ratings";
 import {
   DeliveryStatusPill,
   OrderStatusPill,
@@ -92,6 +94,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
     { key: "on_the_way", label: "On the way" },
     { key: "delivered", label: "Delivered" },
   ] as const;
+  const { byOrder: ratingByOrder } = await fetchOrderRatings(supabase, [id]);
+  const rating = ratingByOrder.get(id) ?? null;
   const proofImg = await proofImageUrl(order.delivery_proof_url as string | null);
   const proofNote = (order.delivery_proof_note as string | null)?.trim() || null;
   const proofAt = order.delivery_proof_at ? placedFmt.format(new Date(order.delivery_proof_at as string)) : null;
@@ -279,6 +283,32 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
           )}
         </div>
       </section>
+
+      {rating ? (
+        <section className="staff-panel mb-3">
+          <div className="staff-panel__head">
+            <i className="bi bi-star" aria-hidden="true" />
+            <span>Customer rating</span>
+          </div>
+          <div className="staff-panel__body staff-panel__body--padded">
+            <dl className="staff-kv">
+              <dt>Food</dt>
+              <dd className="d-flex align-items-center gap-2">
+                <Stars value={rating.food_rating} /> <span className="fw-semibold">{rating.food_rating}/5</span>
+              </dd>
+              {rating.rider_rating ? (
+                <>
+                  <dt>Rider</dt>
+                  <dd className="d-flex align-items-center gap-2">
+                    <Stars value={rating.rider_rating} /> <span className="fw-semibold">{rating.rider_rating}/5</span>
+                  </dd>
+                </>
+              ) : null}
+            </dl>
+            {rating.comment ? <p className="staff-review">“{rating.comment}”</p> : null}
+          </div>
+        </section>
+      ) : null}
 
       <section className="staff-panel">
         <div className="staff-panel__head">

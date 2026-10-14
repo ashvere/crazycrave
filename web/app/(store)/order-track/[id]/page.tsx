@@ -2,6 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CancelOrderModal } from "@/components/store/cancel-order-modal";
+import { RateOrderForm } from "@/components/store/rate-order-form";
+import { Stars } from "@/components/stars";
+import { canRate, fetchOrderRatings } from "@/lib/ratings";
 import {
   customerCanCancel,
   customerDeliveryStatusLabel,
@@ -10,7 +13,7 @@ import {
   type CustomerOrderRow,
 } from "@/lib/customer-orders";
 
-type Search = Promise<{ cancelled?: string; cancel_error?: string; placed?: string }>;
+type Search = Promise<{ cancelled?: string; cancel_error?: string; placed?: string; rated?: string }>;
 
 export default async function OrderTrackPage({
   params,
@@ -54,6 +57,12 @@ export default async function OrderTrackPage({
       .maybeSingle();
     riderName = (rp?.display_name as string | null) ?? null;
   }
+
+  const showRating = canRate(row);
+  const { available: ratingsOn, byOrder } = showRating
+    ? await fetchOrderRatings(supabase, [orderId])
+    : { available: false, byOrder: new Map() };
+  const myRating = byOrder.get(orderId) ?? null;
 
   const sp = await searchParams;
   let alert: { kind: "success" | "warning"; message: string } | null = null;
@@ -137,6 +146,47 @@ export default async function OrderTrackPage({
               {row.barangay}
             </p>
           </section>
+
+          {showRating && ratingsOn ? (
+            <section id="rate" className="order-track-rate" aria-labelledby="rate-heading">
+              {myRating ? (
+                <>
+                  <h2 id="rate-heading" className="order-track-rate__title">
+                    <i className="bi bi-star-fill" aria-hidden="true" /> Your rating
+                  </h2>
+                  {sp.rated === "1" ? (
+                    <p className="order-track-rate__thanks">Thanks for your feedback!</p>
+                  ) : null}
+                  <dl className="order-track-rate__given">
+                    <dt>Food</dt>
+                    <dd>
+                      <Stars value={myRating.food_rating} />
+                    </dd>
+                    {myRating.rider_rating ? (
+                      <>
+                        <dt>Rider</dt>
+                        <dd>
+                          <Stars value={myRating.rider_rating} />
+                        </dd>
+                      </>
+                    ) : null}
+                  </dl>
+                  {myRating.comment ? <p className="order-track-rate__comment">“{myRating.comment}”</p> : null}
+                </>
+              ) : (
+                <>
+                  <h2 id="rate-heading" className="order-track-rate__title">
+                    <i className="bi bi-star" aria-hidden="true" /> Rate your order
+                  </h2>
+                  <RateOrderForm
+                    orderId={orderId}
+                    shopName={shopName}
+                    riderName={!pickup && row.rider_id ? riderName ?? "your rider" : null}
+                  />
+                </>
+              )}
+            </section>
+          ) : null}
 
           <div className="order-track-actions">
             {row.rider_id && String(row.order_status).toLowerCase() !== "cancelled" ? (

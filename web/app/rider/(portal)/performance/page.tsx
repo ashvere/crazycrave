@@ -1,4 +1,6 @@
 import { RiderPageShell } from "@/components/rider/rider-page-shell";
+import { Stars } from "@/components/stars";
+import { riderRatings } from "@/lib/ratings";
 import {
   deliveredAt,
   fee,
@@ -8,6 +10,7 @@ import {
   isCancelled,
   isDelivered,
   peso,
+  phDateTime,
   phDay,
 } from "@/lib/rider-portal";
 
@@ -15,7 +18,12 @@ const dayLabel = new Intl.DateTimeFormat("en-PH", { timeZone: "Asia/Manila", wee
 
 export default async function RiderPerformancePage() {
   const { supabase, user, riderName } = await getRiderContext();
-  const all = await fetchMyDeliveries(supabase, user.id);
+  const [all, ratings] = await Promise.all([
+    fetchMyDeliveries(supabase, user.id),
+    riderRatings(supabase, [user.id]),
+  ]);
+  const myRating = ratings.byRider.get(user.id) ?? null;
+  const reviews = ratings.recent.slice(0, 10);
 
   const delivered = all.filter(isDelivered);
   const cancelled = all.filter(isCancelled).length;
@@ -66,6 +74,23 @@ export default async function RiderPerformancePage() {
           </span>
           <span className="rider-earn-card__sub">{cancelled} cancelled</span>
         </div>
+        {ratings.available ? (
+          <div className="rider-earn-card">
+            <span className="rider-earn-card__label">Your rating</span>
+            <span className="rider-earn-card__value tabular-nums">
+              {myRating ? (
+                <>
+                  {myRating.avg.toFixed(1)} <i className="bi bi-star-fill rider-star" aria-hidden="true" />
+                </>
+              ) : (
+                "—"
+              )}
+            </span>
+            <span className="rider-earn-card__sub">
+              {myRating ? `from ${myRating.count} customer${myRating.count === 1 ? "" : "s"}` : "no ratings yet"}
+            </span>
+          </div>
+        ) : null}
         <div className="rider-earn-card">
           <span className="rider-earn-card__label">Avg. fee</span>
           <span className="rider-earn-card__value tabular-nums">{peso(avgFee)}</span>
@@ -100,6 +125,38 @@ export default async function RiderPerformancePage() {
           ))}
         </div>
       </section>
+      {ratings.available ? (
+        <section className="rider-dash-section">
+          <h2 className="rider-dash-section__title">
+            <i className="bi bi-chat-quote" aria-hidden="true" />
+            <span>What customers say</span>
+          </h2>
+          {reviews.length === 0 ? (
+            <div className="rider-dash-empty-card" role="status">
+              <div className="rider-dash-empty-card__icon" aria-hidden="true">
+                <i className="bi bi-star" />
+              </div>
+              <h3 className="rider-dash-empty-card__title">No reviews yet</h3>
+              <p className="rider-dash-empty-card__text">Customers can rate you after each delivery.</p>
+            </div>
+          ) : (
+            <ul className="rider-list">
+              {reviews.map((r) => (
+                <li key={r.order_id} className="rider-list__row rider-list__row--static">
+                  <span className="rider-list__main">
+                    <span className="rider-list__title">
+                      <Stars value={r.rider_rating ?? 0} size="sm" />
+                      <span className="ms-2 rider-list__sub">Order #{r.order_id}</span>
+                    </span>
+                    {r.comment ? <span className="rider-list__text rider-review__text">“{r.comment}”</span> : null}
+                    <span className="rider-list__sub">{phDateTime.format(new Date(r.created_at))}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : null}
     </RiderPageShell>
   );
 }

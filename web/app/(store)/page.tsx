@@ -5,6 +5,7 @@ import {
 } from "@/lib/menu-catalog";
 import { HomeIndex } from "@/components/store/home-index";
 import { CartBar } from "@/components/store/cart-controls";
+import { shopRatingSummaries } from "@/lib/ratings";
 
 export default async function StoreHomePage() {
   if (!isSupabaseConfigured()) {
@@ -35,6 +36,12 @@ export default async function StoreHomePage() {
 
   const { shops, menusByShop } = await loadHomeCatalog(supabase);
   const catalog = await buildMenuCatalogForPicks(supabase);
+  const shopRatings = Object.fromEntries(
+    await shopRatingSummaries(
+      supabase,
+      shops.map((s) => s.id)
+    )
+  );
 
   const picksConfig = {
     catalog,
@@ -58,6 +65,7 @@ export default async function StoreHomePage() {
       picksConfig={picksConfig}
       scheduleMinDate={scheduleMinDate}
       dataError={shops.length === 0 ? null : null}
+      shopRatings={shopRatings}
     />
     <CartBar />
     </>

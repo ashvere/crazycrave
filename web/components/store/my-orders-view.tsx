@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Stars } from "@/components/stars";
 import {
   customerCanCancel,
   customerDeliveryStatusLabel,
@@ -9,6 +10,10 @@ import {
 
 export type CustomerOrderWithMeta = CustomerOrderRow & {
   chatUnread?: number;
+  /** Delivered and ratings are switched on. */
+  rateable?: boolean;
+  /** Food stars the customer gave, if already rated. */
+  myFoodRating?: number | null;
 };
 
 type Props = {
@@ -113,6 +118,22 @@ export function MyOrdersView({ orders, flash }: Props) {
                       <i className="bi bi-geo-alt me-1" aria-hidden="true" />
                       Track order
                     </Link>
+                    {order.rateable ? (
+                      order.myFoodRating ? (
+                        <Link
+                          href={`/order-track/${orderId}#rate`}
+                          className="my-orders-rated"
+                          aria-label={`You rated this order ${order.myFoodRating} out of 5`}
+                        >
+                          <Stars value={order.myFoodRating} size="sm" label="" />
+                        </Link>
+                      ) : (
+                        <Link href={`/order-track/${orderId}#rate`} className="btn btn-sm btn-warning my-orders-rate-btn">
+                          <i className="bi bi-star-fill me-1" aria-hidden="true" />
+                          Rate
+                        </Link>
+                      )
+                    ) : null}
                     {order.rider_id && !isCancelled ? (
                       <Link
                         href={`/order-chat/${orderId}`}

@@ -59,8 +59,7 @@ export function RiderDashboard({ orders, riderName }: Props) {
               </div>
               <h3 className="rider-dash-empty-card__title">No deliveries yet</h3>
               <p className="rider-dash-empty-card__text">
-                The restaurant will assign orders to you when they are ready for pickup. Run
-                the latest Supabase migration so the <code>orders</code> table exists.
+                The shop will assign orders to you when they&apos;re ready for pickup.
               </p>
             </div>
           ) : (
@@ -109,32 +108,31 @@ export function RiderDashboard({ orders, riderName }: Props) {
                         <span>{o.barangay}</span>
                       </p>
                     ) : null}
-                    <div className="rider-delivery-card__actions">
-                      <Link
-                        href={`/rider/order/${o.id}`}
-                        className="btn btn-sm btn-dark rider-btn-pill"
-                      >
+                    <div className="rider-btn-row">
+                      <Link href={`/rider/order/${o.id}`} className="rider-btn rider-btn--light">
+                        <i className="bi bi-card-list" aria-hidden="true" />
                         Details
                       </Link>
                       <a
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsDest)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-sm btn-outline-secondary rider-btn-pill"
-                        aria-label="Open map"
+                        className="rider-btn rider-btn--light"
                       >
                         <i className="bi bi-map" aria-hidden="true" />
+                        Map
                       </a>
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsDest)}&travelmode=two_wheeler`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-sm rider-btn-pill rider-btn-nav"
-                        aria-label="Navigate"
+                        className="rider-btn rider-btn--gold"
                       >
                         <i className="bi bi-sign-turn-right" aria-hidden="true" />
-                        <span className="d-none d-sm-inline">Navigate</span>
+                        Navigate
                       </a>
+                    </div>
+                    <div className="rider-delivery-card__actions">
                       <RiderDeliveryActions
                         orderId={o.id}
                         deliveryStatus={deliveryStatus}

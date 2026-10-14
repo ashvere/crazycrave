@@ -105,8 +105,7 @@ export function RiderDeliveryActions({
           {!compact ? (
             <>
               <p className="rider-delivery-actions__hint">
-                Update status as you go. When the customer receives the order, tap{" "}
-                <strong>Mark complete</strong> and add optional proof (photo URL).
+                Tap the button at each step. When the customer has the order, mark it complete.
               </p>
               <ol className="rider-delivery-steps" aria-label="Delivery progress">
                 {(() => {
@@ -170,7 +169,7 @@ export function RiderDeliveryActions({
           ) : null}
 
           <details className="rider-delivery-actions__more">
-            <summary className="rider-delivery-actions__more-summary">Other status</summary>
+            <summary className="rider-delivery-actions__more-summary">Change status manually</summary>
             <RiderStatusSelect
               orderId={orderId}
               redirectBack={redirectBack}

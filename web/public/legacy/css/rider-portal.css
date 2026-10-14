@@ -2106,3 +2106,350 @@ a.rider-list__row:hover {
     flex: none;
     min-height: 0;
 }
+
+/* ==========================================================================
+   Rider portal refresh: calm background, centred column, one button system
+   ========================================================================== */
+
+.rider-dash-body {
+    background: #f6f3ed;
+    background-image: none;
+    background-attachment: scroll;
+}
+
+.rider-dash-page__inner {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-inline: 16px;
+}
+
+.rider-dash-hero {
+    margin-bottom: 1.25rem;
+}
+
+/* Buttons */
+.rider-btn-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.rider-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0 0.9rem;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.08s;
+}
+
+.rider-btn:active {
+    transform: translateY(1px);
+}
+
+.rider-btn:focus-visible {
+    outline: 3px solid rgba(212, 162, 12, 0.4);
+    outline-offset: 2px;
+}
+
+.rider-btn .bi {
+    font-size: 1rem;
+}
+
+.rider-btn--dark {
+    background: #0a0a0a;
+    color: #fff;
+}
+
+.rider-btn--dark:hover {
+    background: #262626;
+    color: #fff;
+}
+
+.rider-btn--light {
+    background: #fff;
+    border-color: #e5e0d4;
+    color: #1f2937;
+}
+
+.rider-btn--light:hover {
+    background: #faf8f3;
+    border-color: #d6cfbf;
+    color: #0a0a0a;
+}
+
+.rider-btn--gold {
+    background: #d4a20c;
+    color: #1a1406;
+}
+
+.rider-btn--gold:hover {
+    background: #c1930a;
+    color: #1a1406;
+}
+
+.rider-btn--sm {
+    min-height: 38px;
+    padding: 0 0.8rem;
+    font-size: 0.82rem;
+    border-radius: 10px;
+}
+
+/* Delivery cards (dashboard) */
+.rider-delivery-card .rider-btn-row {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #f0ebe0;
+}
+
+.rider-delivery-card__actions {
+    margin-top: 0.5rem;
+}
+
+.rider-delivery-card__actions:empty {
+    display: none;
+}
+
+/* Cards (order detail) */
+.rider-card {
+    background: #fff;
+    border: 1px solid #ebe6dc;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(10, 10, 10, 0.04);
+    padding: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+@media (min-width: 576px) {
+    .rider-card {
+        padding: 1.25rem;
+    }
+}
+
+.rider-card__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0a0a0a;
+}
+
+.rider-card__title .bi {
+    color: #b8860b;
+}
+
+.rider-card__title-meta {
+    margin-left: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #9ca3af;
+}
+
+.rider-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+}
+
+.rider-back:hover {
+    color: #0a0a0a;
+}
+
+.rider-od-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.rider-od-head .rider-dash-header__title {
+    margin: 0;
+}
+
+.rider-od-head__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.rider-od-customer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid #f0ebe0;
+}
+
+.rider-od-customer__avatar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: #fef3c7;
+    color: #92400e;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.rider-od-customer__main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.rider-od-customer__name {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rider-od-customer__phone {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.rider-od-rows {
+    margin: 0 0 1rem;
+}
+
+.rider-od-row {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0ebe0;
+}
+
+.rider-od-row dt {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #9ca3af;
+    align-self: start;
+    padding-top: 0.1rem;
+}
+
+.rider-od-row dd {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.rider-od-row__sub {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.rider-od-note {
+    padding: 0.5rem 0.65rem;
+    border-radius: 10px;
+    background: #fffbeb;
+    color: #78350f;
+    font-size: 0.875rem;
+}
+
+.rider-od-row--total {
+    border-bottom: 0;
+    align-items: center;
+}
+
+.rider-od-row--total dt {
+    color: #374151;
+}
+
+.rider-od-row--total dd {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0a0a0a;
+}
+
+/* Items list */
+.rider-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.rider-items__row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid #f0ebe0;
+}
+
+.rider-items__row:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.rider-items__qty {
+    flex: 0 0 2.25rem;
+    font-weight: 700;
+    color: #b8860b;
+}
+
+.rider-items__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 500;
+}
+
+.rider-items__price {
+    flex: 0 0 auto;
+    font-weight: 600;
+}
+
+/* Status actions inside the detail card */
+.rider-card .rider-delivery-actions__hint {
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.rider-card .rider-delivery-actions__more {
+    margin-top: 0.75rem;
+}
+
+.rider-card .rider-delivery-actions__more-summary {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+@media (max-width: 380px) {
+    .rider-btn {
+        padding: 0 0.6rem;
+        font-size: 0.82rem;
+    }
+
+    .rider-od-row {
+        grid-template-columns: 5.5rem minmax(0, 1fr);
+    }
+}

@@ -95,12 +95,12 @@ export async function riderMarkDelivered(formData: FormData): Promise<{ error: s
 
   const note = String(formData.get("delivery_proof_note") ?? "").trim().slice(0, 500);
   const photo = formData.get("proof_photo");
-  let proof: string | null = null;
-  if (photo instanceof File && photo.size > 0) {
-    const up = await uploadDeliveryProof(orderId, photo);
-    if ("error" in up) return { error: up.error };
-    proof = up.stored;
+  if (!(photo instanceof File) || photo.size === 0) {
+    return { error: "A proof photo is required to complete the delivery." };
   }
+  const up = await uploadDeliveryProof(orderId, photo);
+  if ("error" in up) return { error: up.error };
+  const proof = up.stored;
 
   const { error } = await supabase
     .from("orders")

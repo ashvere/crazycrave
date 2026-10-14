@@ -38,6 +38,10 @@ export function RiderCamera({
   const [error, setError] = useState<string | null>(null);
   const [canSwitch, setCanSwitch] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  // After the rider taps Flip, ask for exactly that camera so we can tell if it exists.
+  const flipped = useRef(false);
+  const previousFacing = useRef<"environment" | "user">("environment");
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -55,10 +59,26 @@ export function RiderCamera({
         return;
       }
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-          audio: false,
-        });
+        const facingMode = flipped.current ? { exact: facing } : { ideal: facing };
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false,
+          });
+        } catch (err) {
+          const name = (err as { name?: string } | null)?.name ?? "";
+          if (flipped.current && (name === "OverconstrainedError" || name === "NotFoundError")) {
+            // This device has no camera on that side: go back to the one that worked.
+            flipped.current = false;
+            if (!cancelled) {
+              setNotice("This device only has one camera.");
+              setFacing(previousFacing.current);
+            }
+            return;
+          }
+          throw err;
+        }
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -70,8 +90,10 @@ export function RiderCamera({
           await v.play().catch(() => {});
         }
         setReady(true);
+        // Phones always get the Flip button (many don't list both cameras reliably).
         const devices = await navigator.mediaDevices.enumerateDevices().catch(() => []);
-        if (!cancelled) setCanSwitch(devices.filter((d) => d.kind === "videoinput").length > 1);
+        const touch = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+        if (!cancelled) setCanSwitch(touch || devices.filter((d) => d.kind === "videoinput").length > 1);
       } catch (err) {
         if (!cancelled) setError(cameraError(err));
       }
@@ -143,6 +165,7 @@ export function RiderCamera({
           autoPlay
         />
         {flash ? <span className="rider-cam__flash" aria-hidden="true" /> : null}
+        {notice ? <p className="rider-cam__notice" role="status">{notice}</p> : null}
         {!ready && !error ? (
           <p className="rider-cam__status">
             <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
@@ -184,10 +207,17 @@ export function RiderCamera({
             <button
               type="button"
               className="rider-cam__icon-btn"
-              onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}
-              aria-label="Switch camera"
+              onClick={() => {
+                setNotice(null);
+                previousFacing.current = facing;
+                flipped.current = true;
+                setFacing((f) => (f === "environment" ? "user" : "environment"));
+              }}
+              aria-label={facing === "environment" ? "Switch to front camera" : "Switch to back camera"}
+              disabled={!ready}
             >
               <i className="bi bi-arrow-repeat" aria-hidden="true" />
+              <span className="rider-cam__flip-label">Flip</span>
             </button>
           ) : null}
         </span>

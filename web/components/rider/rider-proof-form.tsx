@@ -72,6 +72,10 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting) return;
+    if (!photo) {
+      setError("Take a proof photo first.");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     const fd = new FormData(e.currentTarget);
@@ -106,7 +110,7 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
       ) : null}
 
       <p className="rider-form__label mb-2">
-        Proof photo <span className="rider-proof__optional">optional</span>
+        Proof photo <span className="rider-proof__required">required</span>
       </p>
 
       {preview ? (
@@ -204,7 +208,16 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
         </div>
       ) : null}
 
-      <button type="submit" className="rider-btn rider-btn--green w-100" disabled={submitting || preparing}>
+      {!photo ? (
+        <p className="rider-proof__need" role="note">
+          <i className="bi bi-camera" aria-hidden="true" /> Take a photo of the delivered order to finish.
+        </p>
+      ) : null}
+      <button
+        type="submit"
+        className="rider-btn rider-btn--green w-100"
+        disabled={submitting || preparing || !photo}
+      >
         {submitting ? (
           <>
             <span className="spinner-border spinner-border-sm" aria-hidden="true" />

@@ -1601,3 +1601,508 @@
 .rider-dash-page {
     padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0));
 }
+
+/* ==========================================================================
+   Rider portal pages: Earnings, Stats, Alerts, Profile, GPS
+   ========================================================================== */
+
+.rider-earn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .rider-earn-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.rider-earn-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.95rem 1rem;
+    background: #fff;
+    border: 1px solid #ebe6dc;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(10, 10, 10, 0.04);
+    min-width: 0;
+}
+
+.rider-earn-card--hero {
+    background: linear-gradient(160deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-color: #0a0a0a;
+    color: #fff;
+}
+
+.rider-earn-card__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #9ca3af;
+}
+
+.rider-earn-card--hero .rider-earn-card__label {
+    color: #d4a20c;
+}
+
+.rider-earn-card__value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.rider-earn-card__sub {
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.rider-earn-card--hero .rider-earn-card__sub {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.rider-dash-section__meta {
+    margin-left: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* Lists (earnings rows, alerts, GPS stops) */
+.rider-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.rider-list__row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 0.95rem;
+    background: #fff;
+    border: 1px solid #ebe6dc;
+    border-radius: 14px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+a.rider-list__row:hover {
+    border-color: #d4a20c;
+    box-shadow: 0 4px 16px rgba(10, 10, 10, 0.06);
+    color: inherit;
+}
+
+.rider-list__row--static {
+    flex-wrap: wrap;
+}
+
+.rider-list__icon {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.rider-list__icon--green { background: #dcfce7; color: #15803d; }
+.rider-list__icon--blue { background: #dbeafe; color: #1d4ed8; }
+.rider-list__icon--amber { background: #fef3c7; color: #b45309; }
+.rider-list__icon--red { background: #fee2e2; color: #b91c1c; }
+
+.rider-list__main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.rider-list__title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0a0a0a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rider-list__text {
+    font-size: 0.85rem;
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rider-list__sub {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.rider-list__amount {
+    flex: 0 0 auto;
+    font-weight: 700;
+    color: #15803d;
+}
+
+.rider-list__action {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #b8860b;
+}
+
+/* 7-day bar chart */
+.rider-chart {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.5rem;
+    align-items: end;
+    padding: 1rem 1rem 0.85rem;
+}
+
+.rider-chart__col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.rider-chart__count {
+    min-height: 1.1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0a0a0a;
+}
+
+.rider-chart__track {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 2.5rem;
+    height: 140px;
+    border-radius: 8px;
+    background: #f5f2ea;
+    overflow: hidden;
+}
+
+.rider-chart__bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8px;
+    background: #d6c9a8;
+}
+
+.rider-chart__bar--today {
+    background: linear-gradient(180deg, #e0b11e 0%, #b8860b 100%);
+}
+
+.rider-chart__label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* Flash messages on rider pages */
+.rider-alert {
+    display: flex;
+    align-items: flex-start;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Profile */
+.rider-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.15rem;
+    margin-bottom: 1.5rem;
+}
+
+.rider-profile-card__avatar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #1a1a1a, #0a0a0a);
+    color: #d4a20c;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.rider-profile-card__info {
+    min-width: 0;
+}
+
+.rider-profile-card__name {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.rider-profile-card__email {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    overflow-wrap: anywhere;
+}
+
+.rider-profile-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.rider-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.rider-tag--green { background: #dcfce7; color: #166534; }
+.rider-tag--amber { background: #fef3c7; color: #92400e; }
+
+.rider-form {
+    display: grid;
+    gap: 1rem;
+    padding: 1.15rem;
+}
+
+.rider-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+.rider-form__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    float: none;
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.rider-form__hint {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.rider-form__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.rider-form .form-control,
+.rider-form .form-select {
+    min-height: 44px;
+    border-radius: 10px;
+    border-color: #e5e0d4;
+}
+
+.rider-form .form-control:focus,
+.rider-form .form-select:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 0 3px rgba(212, 162, 12, 0.18);
+}
+
+.rider-form__submit {
+    min-height: 46px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.rider-seg {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.rider-seg__opt {
+    position: relative;
+    margin: 0;
+    cursor: pointer;
+}
+
+.rider-seg__opt input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.rider-seg__opt span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    border: 1px solid #e5e0d4;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.rider-seg__opt span .bi {
+    font-size: 0.7rem;
+}
+
+.rider-seg__opt--available span .bi { color: #16a34a; }
+.rider-seg__opt--busy span .bi { color: #d97706; }
+.rider-seg__opt--offline span .bi { color: #6b7280; }
+
+.rider-seg__opt input:checked + span {
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #fff;
+}
+
+.rider-seg__opt input:focus-visible + span {
+    outline: 3px solid rgba(212, 162, 12, 0.35);
+    outline-offset: 2px;
+}
+
+.rider-logout-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-top: 1.25rem;
+    padding: 0.85rem;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    background: #fff;
+    color: #b91c1c;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.rider-logout-row:hover {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+/* GPS */
+.rider-gps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.rider-gps__pulse {
+    position: relative;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: #f3f4f6;
+    color: #9ca3af;
+    font-size: 1.3rem;
+}
+
+.rider-gps__pulse.is-live {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.rider-gps__pulse.is-live::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid #16a34a;
+    animation: rider-gps-ping 1.6s ease-out infinite;
+}
+
+@keyframes rider-gps-ping {
+    from { transform: scale(1); opacity: 0.7; }
+    to { transform: scale(1.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rider-gps__pulse.is-live::after {
+        animation: none;
+    }
+}
+
+.rider-gps__body {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.rider-gps__status {
+    margin: 0;
+    font-weight: 700;
+}
+
+.rider-gps__coords {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.rider-gps__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rider-gps__note {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 1.5rem;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+/* Pages with the dock nav: keep the last content clear of it; empty states stay compact. */
+.rider-page-docked {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.rider-page-docked .rider-dash-section {
+    flex: none;
+}
+
+.rider-page-docked .rider-dash-empty-card {
+    flex: none;
+    min-height: 0;
+}

@@ -120,7 +120,7 @@ export function RiderApplyForm() {
     <div className="rider-login-shell rider-login-shell--apply">
       <aside
         className="rider-login-visual rider-login-visual--apply"
-        style={{ ["--rider-login-bg" as string]: "radial-gradient(120% 80% at 20% 10%, rgba(212,162,12,0.35) 0%, rgba(212,162,12,0) 55%), linear-gradient(160deg, #1c1917 0%, #0a0a0a 100%)" }}
+        style={{ ["--rider-login-bg" as string]: "url('/images/rider.jpg')" }}
       >
         <div className="rider-login-visual__inner">
           <div className="rider-login-visual__logo-wrap" aria-hidden="true">

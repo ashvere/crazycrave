@@ -51,7 +51,7 @@ export async function KitchenPage({
   children: (ctx: KitchenCtx) => Promise<React.ReactNode> | React.ReactNode;
 }) {
   const staff = await requireStaff();
-  const { shopId, shop, shops } = await resolveStaffShop(staff, search.shop_id, basePath);
+  const { shopId, shop, shops } = await resolveStaffShop(staff, search.shop_id, basePath, { defaultFirst: true });
   const notice = NOTICES[search.error ?? search.done ?? ""];
   const admin = createAdminClient();
 

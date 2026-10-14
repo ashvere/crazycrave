@@ -10,19 +10,17 @@ type Search = Promise<{ shop_id?: string }>;
 export default async function AdminPosPage({ searchParams }: { searchParams: Search }) {
   const staff = await requireStaff();
   const sp = await searchParams;
-  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/pos");
+  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/pos", {
+    defaultFirst: true,
+  });
 
-  const head = (
-    <header className="staff-page-head">
-      <h1 className="staff-page-head__title">Point of sale{shop ? ` — ${shop.name}` : ""}</h1>
-      <p className="staff-page-head__sub">Counter sales go straight to the kitchen display.</p>
-    </header>
-  );
-
-  if (!shopId) {
+  if (!shopId || !shop) {
     return (
       <>
-        {head}
+        <header className="staff-page-head">
+          <h1 className="staff-page-head__title">Point of sale</h1>
+          <p className="staff-page-head__sub">Add a shop first to start selling.</p>
+        </header>
         <ShopPicker basePath="/admin/pos" shops={shops} current={null} />
       </>
     );
@@ -45,9 +43,15 @@ export default async function AdminPosPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      {head}
-      {staff.role === "admin" ? <ShopPicker basePath="/admin/pos" shops={shops} current={shopId} /> : null}
-      <PosRegister key={shopId} shopId={shopId} menus={menus} />
+      <PosRegister
+        key={shopId}
+        shopId={shopId}
+        shopName={shop.name}
+        menus={menus}
+        shopSwitcher={
+          staff.role === "admin" ? <ShopPicker basePath="/admin/pos" shops={shops} current={shopId} /> : null
+        }
+      />
     </>
   );
 }

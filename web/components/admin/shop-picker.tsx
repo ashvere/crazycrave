@@ -1,21 +1,21 @@
 import Link from "next/link";
 import type { ShopOption } from "@/lib/admin-shop-scope";
+import { shopLogoSrc } from "@/lib/shop-logos";
 
-/** Shop switcher for platform admins on per-shop pages (Menu, KDS, POS). */
+/** Shop switcher for platform admins on per-shop pages (Menu, KDS, POS, kitchen pages). */
 export function ShopPicker({
   basePath,
   shops,
   current,
-  inline = false,
+  allLabel,
 }: {
   basePath: string;
   shops: ShopOption[];
   current: number | null;
-  /** Render just the pills, for use inside another filter row. */
-  inline?: boolean;
+  /** Adds a first "all shops" item linking to `basePath` (active when `current` is null). */
+  allLabel?: string;
 }) {
   if (shops.length === 0) {
-    if (inline) return null;
     return (
       <div className="staff-empty-panel">
         <i className="bi bi-shop" aria-hidden="true" />
@@ -26,20 +26,31 @@ export function ShopPicker({
       </div>
     );
   }
-  const pills = shops.map((s) => (
-    <Link
-      key={s.id}
-      href={`${basePath}?shop_id=${s.id}`}
-      className={`btn btn-sm rounded-pill px-3 ${s.id === current ? "btn-dark" : "btn-outline-secondary bg-white"}`}
-      aria-current={s.id === current ? "page" : undefined}
-    >
-      {s.name}
-    </Link>
-  ));
-  if (inline) return <>{pills}</>;
   return (
-    <nav className="d-flex flex-wrap gap-2 mb-3" aria-label="Choose shop">
-      {pills}
+    <nav className="shop-switch" aria-label="Choose shop">
+      {allLabel ? (
+        <Link
+          href={basePath}
+          className={`shop-switch__item${current === null ? " is-active" : ""}`}
+          aria-current={current === null ? "page" : undefined}
+        >
+          <span className="shop-switch__icon" aria-hidden="true">
+            <i className="bi bi-grid" />
+          </span>
+          {allLabel}
+        </Link>
+      ) : null}
+      {shops.map((s) => (
+        <Link
+          key={s.id}
+          href={`${basePath}?shop_id=${s.id}`}
+          className={`shop-switch__item${s.id === current ? " is-active" : ""}`}
+          aria-current={s.id === current ? "page" : undefined}
+        >
+          <img src={shopLogoSrc(s.logo)} alt="" className="shop-switch__logo" />
+          {s.name}
+        </Link>
+      ))}
     </nav>
   );
 }

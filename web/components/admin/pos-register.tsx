@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { posCheckout } from "@/app/admin/(portal)/pos/actions";
 
 export type PosMenu = {
@@ -11,29 +12,61 @@ export type PosMenu = {
   imageSrc: string;
 };
 
-const peso = (n: number) => `₱${n.toFixed(2)}`;
+const peso = (n: number) =>
+  `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export function PosRegister({ shopId, menus }: { shopId: number; menus: PosMenu[] }) {
+const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "exact", "0", "back", "00", "clear"] as const;
+
+/** Counter register (legacy admin/pos.php layout): menu grid, current sale, cash keypad. */
+export function PosRegister({
+  shopId,
+  shopName,
+  menus,
+  shopSwitcher,
+}: {
+  shopId: number;
+  shopName: string;
+  menus: PosMenu[];
+  /** Rendered under the header (admins switching shops). */
+  shopSwitcher?: React.ReactNode;
+}) {
   const [cart, setCart] = useState<Record<number, number>>({});
   const [customer, setCustomer] = useState("");
   const [payment, setPayment] = useState<"cod" | "gcash">("cod");
-  const [tendered, setTendered] = useState("");
-  const [category, setCategory] = useState<string>("All");
-  const [msg, setMsg] = useState<{ kind: "success" | "danger"; text: string; orderId?: number } | null>(null);
+  const [cash, setCash] = useState(""); // digits typed on the keypad, in pesos
+  const [category, setCategory] = useState("All");
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<{ orderId: number; total: number; change: number | null } | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    document.body.classList.add("pos-page");
+    return () => document.body.classList.remove("pos-page", "pos-fullscreen");
+  }, []);
+  useEffect(() => {
+    document.body.classList.toggle("pos-fullscreen", fullscreen);
+  }, [fullscreen]);
 
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(menus.map((m) => m.category?.trim()).filter(Boolean) as string[]))],
     [menus]
   );
-  const shown = category === "All" ? menus : menus.filter((m) => m.category?.trim() === category);
+  const q = search.trim().toLowerCase();
+  const shown = menus.filter(
+    (m) => (category === "All" || m.category?.trim() === category) && (!q || m.name.toLowerCase().includes(q))
+  );
   const lines = menus.filter((m) => cart[m.id]).map((m) => ({ ...m, qty: cart[m.id] }));
+  const count = lines.reduce((s, l) => s + l.qty, 0);
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
-  const cash = parseFloat(tendered);
-  const change = payment === "cod" && Number.isFinite(cash) ? cash - total : null;
+  const tendered = cash ? parseInt(cash, 10) : 0;
+  const change = payment === "cod" && cash ? tendered - total : null;
+  const short = change !== null && change < 0;
 
   function add(id: number, delta: number) {
-    setMsg(null);
+    setError(null);
+    setDone(null);
     setCart((c) => {
       const qty = Math.max(0, Math.min(99, (c[id] ?? 0) + delta));
       const next = { ...c };
@@ -41,6 +74,25 @@ export function PosRegister({ shopId, menus }: { shopId: number; menus: PosMenu[
       else next[id] = qty;
       return next;
     });
+  }
+
+  function key(k: (typeof KEYS)[number]) {
+    setCash((v) => {
+      if (k === "clear") return "";
+      if (k === "back") return v.slice(0, -1);
+      if (k === "exact") return String(Math.ceil(total));
+      const next = (v + k).replace(/^0+/, "");
+      return next.length > 7 ? v : next;
+    });
+  }
+
+  function toggleFullscreen() {
+    const on = !fullscreen;
+    setFullscreen(on);
+    try {
+      if (on) void document.documentElement.requestFullscreen?.();
+      else if (document.fullscreenElement) void document.exitFullscreen();
+    } catch {}
   }
 
   function checkout() {
@@ -52,172 +104,249 @@ export function PosRegister({ shopId, menus }: { shopId: number; menus: PosMenu[
         paymentMethod: payment,
       });
       if ("error" in res) {
-        setMsg({ kind: "danger", text: res.error });
+        setError(res.error);
         return;
       }
-      setMsg({ kind: "success", text: `Order #${res.orderId} sent to the kitchen — ${peso(res.total)} paid.`, orderId: res.orderId });
+      setDone({ orderId: res.orderId, total: res.total, change });
       setCart({});
       setCustomer("");
-      setTendered("");
+      setCash("");
     });
   }
 
   return (
-    <div className="row g-3">
-      <div className="col-12 col-lg-8">
-        {categories.length > 2 ? (
-          <div className="d-flex flex-wrap gap-2 mb-3">
-            {categories.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`btn btn-sm rounded-pill px-3 ${c === category ? "btn-dark" : "btn-outline-secondary bg-white"}`}
-                onClick={() => setCategory(c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        ) : null}
-        {menus.length === 0 ? (
-          <div className="staff-panel">
-            <div className="staff-panel__body text-muted text-center py-4">
-              No active menu items for this shop yet.
-            </div>
-          </div>
-        ) : (
-          <div className="row g-2">
-            {shown.map((m) => (
-              <div key={m.id} className="col-6 col-md-4 col-xl-3">
-                <button
-                  type="button"
-                  className="staff-panel w-100 h-100 text-start p-0 border-0 position-relative"
-                  onClick={() => add(m.id, 1)}
-                >
-                  <img
-                    src={m.imageSrc}
-                    alt=""
-                    className="w-100 rounded-top"
-                    style={{ aspectRatio: "4 / 3", objectFit: "cover" }}
-                    loading="lazy"
-                  />
-                  <span className="d-block p-2">
-                    <span className="d-block small fw-semibold text-truncate">{m.name}</span>
-                    <span className="d-block small text-muted tabular-nums">{peso(m.price)}</span>
-                  </span>
-                  {cart[m.id] ? (
-                    <span className="badge rounded-pill text-bg-danger position-absolute top-0 end-0 m-2">
-                      {cart[m.id]}
-                    </span>
-                  ) : null}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+    <>
+      <header className="pos-head">
+        <div className="pos-head__text">
+          <h1 className="pos-head__title">Point of sale</h1>
+          <p className="pos-head__sub">{shopName} · syncs to kitchen display</p>
+        </div>
+        <div className="pos-head__actions">
+          <button
+            type="button"
+            className="pos-head__btn"
+            onClick={toggleFullscreen}
+            title={fullscreen ? "Exit full screen" : "Full screen"}
+            aria-pressed={fullscreen}
+          >
+            <i className={`bi ${fullscreen ? "bi-fullscreen-exit" : "bi-arrows-fullscreen"}`} aria-hidden="true" />
+          </button>
+          <Link href={`/admin/kds?shop_id=${shopId}`} className="pos-head__link">
+            <i className="bi bi-display" aria-hidden="true" />
+            <span>KDS</span>
+          </Link>
+        </div>
+      </header>
 
-      <aside className="col-12 col-lg-4">
-        <div className="staff-panel position-sticky" style={{ top: "1rem" }}>
-          <div className="staff-panel__head">
-            <i className="bi bi-cart3" aria-hidden="true" />
-            <span>Current sale</span>
+      {shopSwitcher}
+
+      <div className="pos-layout">
+        <section className="pos-menu" aria-label="Menu items">
+          <div className="pos-menu__toolbar">
+            <h2 className="pos-menu__title">Menu</h2>
+            <span className="pos-menu__count">{shown.length} items</span>
           </div>
-          <div className="staff-panel__body">
-            {msg ? (
-              <div className={`alert alert-${msg.kind} py-2 small`}>
-                {msg.text}
-                {msg.orderId ? (
-                  <>
-                    {" "}
-                    <a href={`/admin/orders/${msg.orderId}/receipt`} target="_blank" rel="noopener noreferrer" className="alert-link">
-                      Print receipt
-                    </a>
-                  </>
-                ) : null}
+
+          <div className="pos-search-wrap">
+            <i className="bi bi-search pos-search-wrap__icon" aria-hidden="true" />
+            <input
+              type="search"
+              className="pos-search-wrap__input"
+              placeholder="Search menu…"
+              autoComplete="off"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search menu"
+            />
+          </div>
+
+          {categories.length > 1 ? (
+            <div className="pos-categories" role="tablist" aria-label="Categories">
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  role="tab"
+                  aria-selected={c === category}
+                  className={`pos-cat-btn${c === category ? " is-active" : ""}`}
+                  onClick={() => setCategory(c)}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {menus.length === 0 ? (
+            <p className="pos-empty">
+              No active menu items. Add items under <Link href={`/admin/menus?shop_id=${shopId}`}>Menu</Link>.
+            </p>
+          ) : shown.length === 0 ? (
+            <p className="pos-no-results">No items match your search.</p>
+          ) : (
+            <div className="pos-menu-grid">
+              {shown.map((m) => (
+                <div key={m.id} className="pos-menu-item">
+                  <button
+                    type="button"
+                    className={`pos-menu-item__btn pos-menu-item__btn--photo${cart[m.id] ? " is-in-cart" : ""}`}
+                    onClick={() => add(m.id, 1)}
+                  >
+                    {cart[m.id] ? <span className="pos-menu-item__badge">{cart[m.id]}</span> : null}
+                    <img src={m.imageSrc} alt="" className="pos-menu-item__img" loading="lazy" />
+                    <span className="pos-menu-item__meta">
+                      <span className="pos-menu-item__name">{m.name}</span>
+                      <span className="pos-menu-item__price">{peso(m.price)}</span>
+                    </span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <aside className="pos-sale" id="pos-sale" aria-label="Current sale">
+          <header className="pos-sale__head">
+            <h2 className="pos-sale__title">Current sale</h2>
+            {count > 0 ? (
+              <span className="pos-sale__count">
+                {count} {count === 1 ? "item" : "items"}
+              </span>
+            ) : null}
+          </header>
+
+          <div className="pos-sale__body">
+            {done ? (
+              <div className="pos-success" role="status">
+                <strong>Order #{done.orderId} sent to the kitchen.</strong>
+                <br />
+                {peso(done.total)} paid
+                {done.change !== null && done.change > 0 ? ` · change ${peso(done.change)}` : ""}.{" "}
+                <a href={`/admin/orders/${done.orderId}/receipt`} target="_blank" rel="noopener noreferrer">
+                  Print receipt
+                </a>
               </div>
+            ) : null}
+            {error ? (
+              <p className="pos-alert" role="alert">
+                {error}
+              </p>
             ) : null}
 
             {lines.length === 0 ? (
-              <p className="text-muted small mb-3">Tap items to add them.</p>
+              <div className="pos-sale__empty">
+                <i className="bi bi-basket" aria-hidden="true" />
+                <p>Tap a menu item to start a sale.</p>
+              </div>
             ) : (
-              <ul className="list-unstyled mb-3">
-                {lines.map((l) => (
-                  <li key={l.id} className="d-flex align-items-center gap-2 py-1 border-bottom">
-                    <span className="flex-grow-1 small text-truncate">{l.name}</span>
-                    <button type="button" className="btn btn-sm btn-outline-secondary py-0 px-2" onClick={() => add(l.id, -1)} aria-label={`Remove one ${l.name}`}>
-                      −
-                    </button>
-                    <span className="tabular-nums small" style={{ minWidth: 20, textAlign: "center" }}>{l.qty}</span>
-                    <button type="button" className="btn btn-sm btn-outline-secondary py-0 px-2" onClick={() => add(l.id, 1)} aria-label={`Add one ${l.name}`}>
-                      +
-                    </button>
-                    <span className="tabular-nums small text-end" style={{ minWidth: 70 }}>{peso(l.price * l.qty)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="d-flex justify-content-between fw-bold fs-5 mb-3">
-              <span>Total</span>
-              <span className="tabular-nums">{peso(total)}</span>
-            </div>
-
-            <label className="form-label small mb-1" htmlFor="pos-customer">Customer name</label>
-            <input
-              id="pos-customer"
-              className="form-control form-control-sm mb-2"
-              placeholder="Walk-in"
-              value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
-            />
-
-            <div className="btn-group w-100 mb-2" role="group" aria-label="Payment method">
-              <button type="button" className={`btn btn-sm ${payment === "cod" ? "btn-dark" : "btn-outline-secondary"}`} onClick={() => setPayment("cod")}>
-                Cash
-              </button>
-              <button type="button" className={`btn btn-sm ${payment === "gcash" ? "btn-dark" : "btn-outline-secondary"}`} onClick={() => setPayment("gcash")}>
-                GCash
-              </button>
-            </div>
-
-            {payment === "cod" ? (
               <>
-                <label className="form-label small mb-1" htmlFor="pos-cash">Cash received</label>
-                <input
-                  id="pos-cash"
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="0.01"
-                  className="form-control form-control-sm mb-1"
-                  value={tendered}
-                  onChange={(e) => setTendered(e.target.value)}
-                />
-                {change !== null ? (
-                  <p className={`small mb-2 ${change < 0 ? "text-danger" : "text-success"}`}>
-                    {change < 0 ? `Short ${peso(-change)}` : `Change ${peso(change)}`}
-                  </p>
-                ) : null}
-              </>
-            ) : null}
+                <ul className="pos-sale__lines">
+                  {lines.map((l) => (
+                    <li key={l.id} className="pos-sale__line">
+                      <div className="pos-sale__line-main">
+                        <span className="pos-sale__qty">{l.qty}</span>
+                        <span className="pos-sale__name">{l.name}</span>
+                        <span className="pos-sale__amount">{peso(l.price * l.qty)}</span>
+                      </div>
+                      <div className="pos-sale__line-actions">
+                        <button type="button" className="pos-sale__qty-btn" onClick={() => add(l.id, -1)} aria-label={`One less ${l.name}`}>
+                          −
+                        </button>
+                        <button type="button" className="pos-sale__qty-btn" onClick={() => add(l.id, 1)} aria-label={`One more ${l.name}`}>
+                          +
+                        </button>
+                        <button type="button" className="pos-sale__remove" onClick={() => add(l.id, -l.qty)} aria-label={`Remove ${l.name}`}>
+                          ×
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
 
-            <button
-              type="button"
-              className="staff-btn staff-btn--primary w-100 justify-content-center mt-2"
-              disabled={pending || lines.length === 0 || (change !== null && change < 0)}
-              onClick={checkout}
-            >
-              {pending ? "Saving…" : `Charge ${peso(total)}`}
-            </button>
-            {lines.length > 0 ? (
-              <button type="button" className="btn btn-link btn-sm w-100 text-muted mt-1" onClick={() => setCart({})}>
-                Clear sale
-              </button>
-            ) : null}
+                <div className="pos-sale__total">
+                  <span>Total</span>
+                  <strong>{peso(total)}</strong>
+                </div>
+
+                <div className="pos-sale__checkout">
+                  <label className="pos-field">
+                    <span className="pos-field__label">Customer name</span>
+                    <input
+                      className="pos-field__input"
+                      placeholder="Walk-in"
+                      value={customer}
+                      onChange={(e) => setCustomer(e.target.value)}
+                    />
+                  </label>
+
+                  <div className="pos-field">
+                    <span className="pos-field__label">Payment</span>
+                    <div className="pos-pay-toggle" role="group" aria-label="Payment method">
+                      <button type="button" className={payment === "cod" ? "is-active" : ""} onClick={() => setPayment("cod")}>
+                        <i className="bi bi-cash me-1" aria-hidden="true" /> Cash
+                      </button>
+                      <button type="button" className={payment === "gcash" ? "is-active" : ""} onClick={() => setPayment("gcash")}>
+                        <i className="bi bi-phone me-1" aria-hidden="true" /> GCash
+                      </button>
+                    </div>
+                  </div>
+
+                  {payment === "cod" ? (
+                    <div className="pos-cash-panel">
+                      <p className="pos-cash-panel__label">Cash received</p>
+                      <div className="pos-cash-panel__display tabular-nums">{peso(tendered)}</div>
+                      <div className="pos-cash-panel__change">
+                        <span>{short ? "Short" : "Change"}</span>
+                        <strong className={short ? "text-danger" : undefined}>
+                          {change === null ? peso(0) : peso(Math.abs(change))}
+                        </strong>
+                      </div>
+                      <div className="pos-keypad" role="group" aria-label="Cash keypad">
+                        {KEYS.map((k) => (
+                          <button
+                            key={k}
+                            type="button"
+                            className={`pos-key${["exact", "back", "clear"].includes(k) ? " pos-key--action" : ""}${k === "00" ? " pos-key--wide" : ""}`}
+                            onClick={() => key(k)}
+                            aria-label={k === "back" ? "Backspace" : undefined}
+                          >
+                            {k === "exact" ? "Exact" : k === "back" ? "⌫" : k === "clear" ? "Clear" : k}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    className="pos-sale__submit"
+                    disabled={pending || short}
+                    onClick={checkout}
+                  >
+                    {pending ? "Saving…" : short ? "Cash doesn't cover total" : `Complete sale · ${peso(total)}`}
+                  </button>
+                </div>
+
+                <div className="pos-sale__clear-form">
+                  <button type="button" className="pos-sale__clear" onClick={() => setCart({})}>
+                    Clear cart
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      </aside>
-    </div>
+        </aside>
+      </div>
+
+      {count > 0 ? (
+        <a href="#pos-sale" className="pos-mobile-bar">
+          <span>
+            <i className="bi bi-basket me-2" aria-hidden="true" />
+            View sale · {count} {count === 1 ? "item" : "items"}
+          </span>
+          <span className="tabular-nums">{peso(total)}</span>
+        </a>
+      ) : null}
+    </>
   );
 }

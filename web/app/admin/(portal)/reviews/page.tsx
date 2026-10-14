@@ -36,10 +36,10 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
 
   const [{ data, error }, { data: shopRows }] = await Promise.all([
     query,
-    admin.from("restaurants").select("id, name").order("name"),
+    admin.from("restaurants").select("id, name, logo").order("name"),
   ]);
   const ratings = (data as Rating[] | null) ?? [];
-  const shops = (shopRows ?? []).map((s) => ({ id: Number(s.id), name: String(s.name) }));
+  const shops = (shopRows ?? []).map((s) => ({ id: Number(s.id), name: String(s.name), logo: (s.logo as string | null) ?? null }));
   const shopName = new Map(shops.map((s) => [s.id, s.name]));
 
   const orderIds = ratings.map((r) => r.order_id);
@@ -68,15 +68,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
       </header>
 
       {scope === null ? (
-        <nav className="d-flex flex-wrap gap-2 mb-3" aria-label="Filter by shop">
-          <Link
-            href="/admin/reviews"
-            className={`btn btn-sm rounded-pill px-3 ${shopFilter === null ? "btn-dark" : "btn-outline-secondary bg-white"}`}
-          >
-            All shops
-          </Link>
-          <ShopPicker basePath="/admin/reviews" shops={shops} current={shopFilter} inline />
-        </nav>
+        <ShopPicker basePath="/admin/reviews" shops={shops} current={shopFilter} allLabel="All shops" />
       ) : null}
 
       {error ? (

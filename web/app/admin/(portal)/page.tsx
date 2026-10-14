@@ -94,7 +94,7 @@ export default async function AdminDashboardPage() {
             <i className="bi bi-display" /> KDS
           </Link>
           <Link href={`/admin/pos?shop_id=${shopScope}`} className="staff-btn staff-btn--primary">
-            <i className="bi bi-cash-register" /> POS
+            <i className="bi bi-calculator" /> POS
           </Link>
           <Link href={`/admin/menus?shop_id=${shopScope}`} className="staff-btn staff-btn--success">
             <i className="bi bi-journal-text" /> Menu

@@ -72,7 +72,7 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
                 <span>KDS</span>
               </Link>
               <Link href="/admin/pos" className={linkClass(pos)}>
-                <i className="bi bi-cash-register" aria-hidden="true" />
+                <i className="bi bi-calculator" aria-hidden="true" />
                 <span>POS</span>
               </Link>
               <Link href="/admin/menus" className={linkClass(menu)}>
@@ -103,7 +103,7 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
                 <span>KDS</span>
               </Link>
               <Link href={`/admin/pos${shopQs}`} className={linkClass(pos)}>
-                <i className="bi bi-cash-register" aria-hidden="true" />
+                <i className="bi bi-calculator" aria-hidden="true" />
                 <span>POS</span>
               </Link>
               <Link href={`/admin/menus${shopQs}`} className={linkClass(menu)}>

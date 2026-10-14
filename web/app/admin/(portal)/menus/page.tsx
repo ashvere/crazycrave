@@ -21,7 +21,7 @@ export default async function AdminMenusPage({
 }) {
   const staff = await requireStaff();
   const sp = await searchParams;
-  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/menus");
+  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/menus", { defaultFirst: true });
 
   if (!shopId || !shop) {
     return (

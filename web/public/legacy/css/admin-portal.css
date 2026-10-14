@@ -2320,3 +2320,185 @@ body.pos-fullscreen.pos-page {
     font-style: italic;
     color: var(--staff-text);
 }
+
+/* —— Shop switcher (Menu / KDS / POS / kitchen pages) —— */
+.shop-switch {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.35rem;
+    margin: 0 0 1.25rem;
+    background: var(--staff-surface);
+    border: 1px solid var(--staff-border);
+    border-radius: 999px;
+    box-shadow: var(--staff-shadow);
+    width: max-content;
+    max-width: 100%;
+    scrollbar-width: none;
+}
+.shop-switch::-webkit-scrollbar { display: none; }
+.shop-switch__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    padding: 0.35rem 0.95rem 0.35rem 0.35rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--staff-muted);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+.shop-switch__item:hover { background: #f1f5f9; color: var(--staff-text); }
+.shop-switch__item.is-active { background: var(--staff-accent); color: #fff; }
+.shop-switch__item--text { padding-left: 0.95rem; }
+.shop-switch__logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--staff-border);
+}
+.shop-switch__icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: var(--staff-accent);
+}
+.shop-switch__item.is-active .shop-switch__icon { background: rgba(255, 255, 255, 0.2); color: #fff; }
+
+/* —— KDS (Next.js board: 3 status columns) —— */
+.kds-board--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kds-column { overflow: hidden; }
+.kds-column__head { border-top: 4px solid var(--kds-tone, #94a3b8); }
+.kds-column__title { display: inline-flex; align-items: center; gap: 0.45rem; }
+.kds-column__count {
+    min-width: 1.75rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--kds-tone, #94a3b8);
+    color: #fff;
+    font-size: 0.8rem;
+    text-align: center;
+}
+.kds-column--pending { --kds-tone: #f59e0b; }
+.kds-column--preparing { --kds-tone: #0ea5e9; }
+.kds-column--delivering { --kds-tone: #16a34a; }
+.kds-empty i { display: block; font-size: 1.6rem; margin-bottom: 0.35rem; opacity: 0.5; }
+.kds-ticket { border-left: 4px solid var(--kds-tone, #94a3b8); }
+.kds-ticket--late { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15); }
+.kds-ticket__no { font-size: 1.05rem; }
+.kds-ticket__age {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--staff-muted);
+}
+.kds-ticket--late .kds-ticket__age { background: #fee2e2; color: #b91c1c; }
+.kds-ticket__shop {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--staff-accent);
+    margin: 0 0 0.2rem;
+}
+.kds-ticket__list { list-style: none; margin: 0 0 0.6rem; padding: 0.5rem 0.6rem; background: #f8fafc; border-radius: 8px; font-size: 0.875rem; }
+.kds-ticket__list li { display: flex; gap: 0.5rem; padding: 0.1rem 0; }
+.kds-ticket__list strong { min-width: 1.75rem; font-variant-numeric: tabular-nums; }
+.kds-ticket__tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0 0 0.6rem; }
+.kds-tag { font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 6px; background: #e2e8f0; color: #334155; }
+.kds-tag--pickup { background: #e0f2fe; color: #075985; }
+.kds-tag--delivery { background: #fef3c7; color: #92400e; }
+.kds-tag--pos { background: #dcfce7; color: #166534; }
+.kds-ticket__actions { display: flex; gap: 0.4rem; }
+.kds-ticket__next {
+    flex: 1;
+    border: 0;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #fff;
+    background: var(--kds-tone, #0f172a);
+}
+.kds-ticket__next:hover { filter: brightness(0.95); }
+.kds-ticket__icon-btn {
+    border: 1px solid var(--staff-border);
+    background: #fff;
+    border-radius: 8px;
+    width: 2.25rem;
+    color: var(--staff-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.kds-ticket__icon-btn:hover { color: var(--staff-text); }
+.kds-ticket__icon-btn--danger:hover { color: #dc2626; border-color: #fecaca; }
+@media (max-width: 1100px) {
+    .kds-board--3 { grid-template-columns: repeat(3, minmax(220px, 1fr)); overflow-x: auto; }
+}
+@media (max-width: 767px) {
+    .kds-board--3 { grid-template-columns: 1fr; }
+    .kds-column__body { max-height: none; }
+}
+
+/* —— POS (Next.js): photo tiles + pay toggle —— */
+.pos-menu-item__btn--photo { padding: 0; overflow: hidden; display: flex; flex-direction: column; text-align: left; min-height: 0; }
+.pos-menu-item__img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #f1f5f9; display: block; }
+.pos-menu-item__meta { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.6rem 0.7rem 0.7rem; width: 100%; }
+.pos-pay-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.pos-pay-toggle button {
+    border: 1px solid var(--staff-border);
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.55rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--staff-muted);
+}
+.pos-pay-toggle button.is-active { background: var(--staff-accent); border-color: var(--staff-accent); color: #fff; }
+.pos-success {
+    border-radius: 12px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+.pos-success a { color: inherit; font-weight: 700; }
+
+/* POS on phones: jump-to-sale bar (the sale panel stacks below the menu) */
+.pos-mobile-bar { display: none; }
+@media (max-width: 1100px) {
+    .pos-mobile-bar {
+        position: fixed;
+        left: 1rem;
+        right: 1rem;
+        bottom: calc(1rem + env(safe-area-inset-bottom));
+        z-index: 1030;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1.1rem;
+        border-radius: 14px;
+        background: #0f172a;
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+    }
+    .pos-mobile-bar:hover { color: #fff; }
+    .pos-layout { padding-bottom: 4.5rem; }
+}

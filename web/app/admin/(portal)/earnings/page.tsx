@@ -15,7 +15,7 @@ const peso = (n: number) =>
 export default async function AdminEarningsPage({ searchParams }: { searchParams: Search }) {
   const staff = await requireStaff();
   const sp = await searchParams;
-  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/earnings");
+  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/earnings", { defaultFirst: true });
 
   const head = (
     <header className="staff-page-head">

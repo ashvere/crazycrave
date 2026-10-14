@@ -231,6 +231,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
                   <p className="staff-muted small mb-0">Delivering this order</p>
                 </div>
                 <DeliveryStatusPill status={order.delivery_status as string} />
+                {staff.role === "admin" ? (
+                  <Link href={`/admin/messages?rider=${riderId}`} className="staff-btn staff-btn--secondary">
+                    <i className="bi bi-chat-dots" aria-hidden="true" /> Message
+                  </Link>
+                ) : null}
               </div>
               <ol className="staff-steps" aria-label="Delivery progress">
                 {DELIVERY_STEPS.map((st, i) => (

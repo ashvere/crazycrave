@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { riderMarkDelivered } from "@/app/rider/actions";
+import { RiderCamera } from "@/components/rider/rider-camera";
 
 const MAX_SIDE = 1600;
 const QUALITY = 0.8;
@@ -33,6 +34,7 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
   const [preparing, setPreparing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +60,13 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
     }
     setPhoto(small);
     setPreview(URL.createObjectURL(small));
+  }
+
+  function acceptCaptured(file: File) {
+    setCameraOpen(false);
+    setError(null);
+    setPhoto(file);
+    setPreview(URL.createObjectURL(file));
   }
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -116,13 +125,16 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
             <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
           <span className="rider-proof__size">{Math.max(1, Math.round((photo?.size ?? 0) / 1024))} KB</span>
+          <button type="button" className="rider-proof__retake" onClick={() => setCameraOpen(true)}>
+            <i className="bi bi-camera" aria-hidden="true" /> Retake
+          </button>
         </div>
       ) : (
         <div className="rider-btn-row rider-btn-row--2">
           <button
             type="button"
             className="rider-btn rider-btn--dark"
-            onClick={() => cameraRef.current?.click()}
+            onClick={() => setCameraOpen(true)}
             disabled={preparing}
           >
             <i className="bi bi-camera-fill" aria-hidden="true" />
@@ -140,6 +152,14 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
         </div>
       )}
       {preparing ? <p className="rider-form__hint mt-2 mb-0">Preparing photo…</p> : null}
+
+      {cameraOpen ? (
+        <RiderCamera
+          onCapture={acceptCaptured}
+          onClose={() => setCameraOpen(false)}
+          onFallback={() => cameraRef.current?.click()}
+        />
+      ) : null}
 
       <input
         ref={cameraRef}

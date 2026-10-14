@@ -118,6 +118,10 @@ export function MyOrdersView({ orders, flash }: Props) {
                       <i className="bi bi-geo-alt me-1" aria-hidden="true" />
                       Track order
                     </Link>
+                    <Link href={`/order-track/${orderId}/receipt`} className="btn btn-sm btn-outline-dark">
+                      <i className="bi bi-receipt me-1" aria-hidden="true" />
+                      Receipt
+                    </Link>
                     {order.rateable ? (
                       order.myFoodRating ? (
                         <Link

@@ -134,6 +134,9 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
         <div className="staff-order-head__right">
           <OrderStatusPill status={order.order_status as string} />
           <span className="staff-order-head__total tabular-nums">{peso(total)}</span>
+          <Link href={`/admin/orders/${id}/receipt`} className="staff-btn staff-btn--secondary">
+            <i className="bi bi-receipt" aria-hidden="true" /> Receipt
+          </Link>
         </div>
       </header>
 

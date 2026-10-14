@@ -26,6 +26,8 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
     pathname.startsWith("/admin/shop"); // future parity with add/edit
   const stats = pathname.startsWith("/admin/stats");
   const riders = pathname.startsWith("/admin/riders");
+  const customers = pathname.startsWith("/admin/customers");
+  const reviews = pathname.startsWith("/admin/reviews");
   const kds = pathname.startsWith("/admin/kds");
   const pos = pathname.startsWith("/admin/pos");
   const menu = pathname.startsWith("/admin/menus");
@@ -64,9 +66,29 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
                 <i className="bi bi-shop" aria-hidden="true" />
                 <span>Shops</span>
               </Link>
+              <Link href="/admin/kds" className={linkClass(kds)}>
+                <i className="bi bi-display" aria-hidden="true" />
+                <span>KDS</span>
+              </Link>
+              <Link href="/admin/pos" className={linkClass(pos)}>
+                <i className="bi bi-cash-register" aria-hidden="true" />
+                <span>POS</span>
+              </Link>
+              <Link href="/admin/menus" className={linkClass(menu)}>
+                <i className="bi bi-journal-text" aria-hidden="true" />
+                <span>Menu</span>
+              </Link>
               <Link href="/admin/riders" className={linkClass(riders)}>
                 <i className="bi bi-bicycle" aria-hidden="true" />
                 <span>Riders</span>
+              </Link>
+              <Link href="/admin/customers" className={linkClass(customers)}>
+                <i className="bi bi-people" aria-hidden="true" />
+                <span>Customers</span>
+              </Link>
+              <Link href="/admin/reviews" className={linkClass(reviews)}>
+                <i className="bi bi-star" aria-hidden="true" />
+                <span>Reviews</span>
               </Link>
               <Link href="/admin/stats" className={linkClass(stats)}>
                 <i className="bi bi-bar-chart" aria-hidden="true" />
@@ -94,6 +116,10 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
               <Link href={`/admin/recipes${shopQs}`} className={linkClass(recipes)}>
                 <i className="bi bi-book" aria-hidden="true" />
                 <span>Recipes</span>
+              </Link>
+              <Link href="/admin/reviews" className={linkClass(reviews)}>
+                <i className="bi bi-star" aria-hidden="true" />
+                <span>Reviews</span>
               </Link>
             </>
           )}

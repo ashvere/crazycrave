@@ -2,6 +2,7 @@ import Script from "next/script";
 import { StoreHeader } from "@/components/store/store-header";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StorefrontBodyClass } from "@/components/store/storefront-body-class";
+import { VisitorBeacon } from "@/components/store/visitor-beacon";
 import { legacyCss } from "@/lib/legacy-css";
 
 export default function StoreLayout({
@@ -33,6 +34,7 @@ export default function StoreLayout({
       <StoreHeader />
       {children}
       <StoreFooter />
+      <VisitorBeacon />
       <Script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         strategy="afterInteractive"

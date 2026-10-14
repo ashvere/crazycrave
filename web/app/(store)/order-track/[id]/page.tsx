@@ -91,6 +91,10 @@ export default async function OrderTrackPage({
             <p className="order-track-page__kicker">Order tracking</p>
             <h1 className="order-track-page__title">Order #{orderId}</h1>
             <p className="order-track-page__shop">{shopName}</p>
+            <Link href={`/order-track/${orderId}/receipt`} className="btn btn-sm btn-outline-dark mt-2">
+              <i className="bi bi-receipt me-1" aria-hidden="true" />
+              View receipt
+            </Link>
           </header>
 
           {alert ? (

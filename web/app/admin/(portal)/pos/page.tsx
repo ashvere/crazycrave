@@ -1,25 +1,53 @@
-import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { encodeMenuImagePath } from "@/lib/cart-cookies";
+import { requireStaff } from "@/lib/staff-session";
+import { resolveStaffShop } from "@/lib/admin-shop-scope";
+import { ShopPicker } from "@/components/admin/shop-picker";
+import { PosRegister, type PosMenu } from "@/components/admin/pos-register";
 
 type Search = Promise<{ shop_id?: string }>;
 
 export default async function AdminPosPage({ searchParams }: { searchParams: Search }) {
+  const staff = await requireStaff();
   const sp = await searchParams;
-  const shopId = sp.shop_id ?? "";
+  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/pos");
+
+  const head = (
+    <header className="staff-page-head">
+      <h1 className="staff-page-head__title">Point of sale{shop ? ` — ${shop.name}` : ""}</h1>
+      <p className="staff-page-head__sub">Counter sales go straight to the kitchen display.</p>
+    </header>
+  );
+
+  if (!shopId) {
+    return (
+      <>
+        {head}
+        <ShopPicker basePath="/admin/pos" shops={shops} current={null} />
+      </>
+    );
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("menus")
+    .select("id, name, price, image, category")
+    .eq("restaurant_id", shopId)
+    .eq("is_active", true)
+    .order("name");
+  const menus: PosMenu[] = (data ?? []).map((m) => ({
+    id: Number(m.id),
+    name: String(m.name),
+    price: Number(m.price),
+    category: (m.category as string | null) ?? null,
+    imageSrc: m.image ? `/images/menus/${encodeMenuImagePath(String(m.image))}` : "/images/menus/default.png",
+  }));
 
   return (
     <>
-      <header className="staff-page-head">
-        <h1 className="staff-page-head__title">Point of sale</h1>
-        <p className="staff-page-head__sub">
-          Counter checkout from <code>pos.php</code> — wire menu cart + order insert next.
-        </p>
-      </header>
-      <p className="text-muted small mb-3">
-        Shop filter: <strong>{shopId || "—"}</strong>
-      </p>
-      <Link href="/admin" className="staff-btn staff-btn--secondary">
-        ← Dashboard
-      </Link>
+      {head}
+      {staff.role === "admin" ? <ShopPicker basePath="/admin/pos" shops={shops} current={shopId} /> : null}
+      <PosRegister key={shopId} shopId={shopId} menus={menus} />
     </>
   );
 }

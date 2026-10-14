@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { encodeMenuImagePath } from "@/lib/cart-cookies";
+import { shopLogoSrc } from "@/lib/shop-logos";
+import { AdminOverview } from "@/components/admin/admin-overview";
 import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
 import {
@@ -194,8 +195,10 @@ export default async function AdminDashboardPage() {
     <>
       <header className="staff-page-head">
         <h1 className="staff-page-head__title">Staff dashboard</h1>
-        <p className="staff-page-head__sub">Shops, menus, and platform orders</p>
+        <p className="staff-page-head__sub">Live overview, shops, and platform orders</p>
       </header>
+
+      <AdminOverview />
 
       <div className="staff-actions">
         <Link href="/admin/orders" className="staff-btn staff-btn--secondary">
@@ -207,9 +210,7 @@ export default async function AdminDashboardPage() {
         <h2 className="h6 text-uppercase text-muted mb-3">Shops</h2>
         <div className="staff-shop-grid">
           {shopList.map((shop) => {
-            const logo = shop.logo
-              ? `/images/logos/${encodeMenuImagePath(shop.logo)}`
-              : "/images/official_logo.png";
+            const logo = shopLogoSrc(shop.logo);
             return (
               <article key={shop.id} className="staff-shop-card">
                 <div className="staff-shop-card__img-wrap staff-shop-card__img-wrap--contain">

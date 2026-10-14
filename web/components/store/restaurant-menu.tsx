@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MenuRow, ShopRow } from "@/lib/menu-catalog";
 import { encodeMenuImagePath } from "@/lib/cart-cookies";
+import { shopLogoSrc } from "@/lib/shop-logos";
 import { CartBar, QtyStepper } from "@/components/store/cart-controls";
 
 type Props = {
@@ -23,7 +24,7 @@ export function RestaurantMenuPage({
   addedId,
 }: Props) {
   const returnTo = `/restaurant?id=${shop.id}`;
-  const logoSrc = `/images/logos/${encodeMenuImagePath(shop.logo ?? "")}`;
+  const logoSrc = shopLogoSrc(shop.logo);
   const about = (shop.description ?? "").trim();
 
   return (

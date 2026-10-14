@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { encodeMenuImagePath } from "@/lib/cart-cookies";
-import { requireStaff, staffShopId } from "@/lib/staff-session";
+import { requireStaff } from "@/lib/staff-session";
+import { resolveStaffShop } from "@/lib/admin-shop-scope";
+import { ShopPicker } from "@/components/admin/shop-picker";
 
 type SearchParams = Promise<{ shop_id?: string }>;
 
@@ -13,29 +14,21 @@ export default async function AdminMenusPage({
 }) {
   const staff = await requireStaff();
   const sp = await searchParams;
-  let shopId = sp.shop_id ? parseInt(sp.shop_id, 10) : NaN;
+  const { shopId, shop, shops } = await resolveStaffShop(staff, sp.shop_id, "/admin/menus");
 
-  const scope = staffShopId(staff);
-  if (scope !== null) {
-    if (Number.isFinite(shopId) && shopId !== scope) {
-      redirect(`/admin/menus?shop_id=${scope}`);
-    }
-    shopId = scope;
-  }
-
-  if (!Number.isFinite(shopId) || shopId < 1) {
-    redirect("/admin");
+  if (!shopId || !shop) {
+    return (
+      <>
+        <header className="staff-page-head">
+          <h1 className="staff-page-head__title">Menus</h1>
+          <p className="staff-page-head__sub">Choose a shop to manage its menu</p>
+        </header>
+        <ShopPicker basePath="/admin/menus" shops={shops} current={null} />
+      </>
+    );
   }
 
   const supabase = await createClient();
-
-  const { data: shop } = await supabase
-    .from("restaurants")
-    .select("id, name")
-    .eq("id", shopId)
-    .maybeSingle();
-
-  if (!shop) redirect("/admin");
 
   const { data: menuList } = await supabase
     .from("menus")
@@ -59,6 +52,10 @@ export default async function AdminMenusPage({
           <i className="bi bi-plus-lg" /> Add menu
         </Link>
       </header>
+
+      {staff.role === "admin" ? (
+        <ShopPicker basePath="/admin/menus" shops={shops} current={shopId} />
+      ) : null}
 
       {items.length === 0 ? (
         <p className="staff-empty">

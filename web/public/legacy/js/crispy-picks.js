@@ -243,7 +243,7 @@
             var item = row.item;
             var href = menuHref(item.shopId);
             var price = '₱' + Number(item.price).toFixed(2);
-            var imgSrc = /^https?:///i.test(item.image || "") ? item.image : imgBase + encodePath(item.image);
+            var imgSrc = /^https?:\/\//i.test(item.image || '') ? item.image : imgBase + encodePath(item.image);
 
             var card = document.createElement('a');
             card.className = 'crispy-picks__card';

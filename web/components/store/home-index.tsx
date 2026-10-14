@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { legacyJs } from "@/lib/legacy-css";
 import type { CatalogItem, MenuRow, ShopRow } from "@/lib/menu-catalog";
 import { menuImageSrc, shopLogoSrc } from "@/lib/shop-logos";
 import barangayMap from "@/lib/data/barangay-pototan.json";
@@ -52,7 +53,7 @@ function CrispyPicksBlock({ picksConfig }: { picksConfig: PicksConfig }) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: json }}
       />
-      <Script src="/legacy/js/crispy-picks.js" strategy="afterInteractive" />
+      <Script src={legacyJs("crispy-picks.js")} strategy="afterInteractive" />
     </>
   );
 }
@@ -400,7 +401,7 @@ export function HomeIndex({
       {isLoggedIn ? <HomeMenuModal barangayMap={barangay} scheduleMinDate={scheduleMinDate} /> : null}
 
       {isLoggedIn ? (
-        <Script src="/legacy/js/home-carousel-and-modal.js" strategy="afterInteractive" />
+        <Script src={legacyJs("home-carousel-and-modal.js")} strategy="afterInteractive" />
       ) : null}
     </>
   );

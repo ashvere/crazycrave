@@ -5,3 +5,8 @@
 export function legacyCss(file: string): string {
   return `/legacy/css/${file}?v=${process.env.NEXT_PUBLIC_ASSET_VERSION ?? "dev"}`;
 }
+
+/** Same per-deploy versioning for scripts in public/legacy/js. */
+export function legacyJs(file: string): string {
+  return `/legacy/js/${file}?v=${process.env.NEXT_PUBLIC_ASSET_VERSION ?? "dev"}`;
+}

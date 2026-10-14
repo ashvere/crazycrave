@@ -2,6 +2,7 @@
 
 import Script from 'next/script';
 import { useEffect } from 'react';
+import { legacyJs } from '@/lib/legacy-css';
 import crispyCfg from '@/lib/data/crispy-ai-public.json';
 import { BRAND_LOGO_SRC } from '@/lib/brand';
 import { legacyCss } from '@/lib/legacy-css';
@@ -90,7 +91,7 @@ export function CrispyAiWidget() {
           </form>
         </div>
       </div>
-      <Script src="/legacy/js/crispy-ai.js" strategy="afterInteractive" />
+      <Script src={legacyJs("crispy-ai.js")} strategy="afterInteractive" />
     </>
   );
 }

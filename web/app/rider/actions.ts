@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { claimRiderOrder } from "@/lib/rider-data";
+import { uploadDeliveryProof } from "@/lib/delivery-proof";
 
 const DELIVERY_STATUSES = ["assigned", "picked_up", "on_the_way", "delivered"] as const;
 
@@ -72,7 +73,8 @@ export async function riderUpdateDelivery(formData: FormData) {
   redirect(redirectTo);
 }
 
-export async function riderMarkDelivered(formData: FormData) {
+/** Complete a delivery with an optional proof photo (uploaded to private storage) and note. */
+export async function riderMarkDelivered(formData: FormData): Promise<{ error: string } | void> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -83,9 +85,22 @@ export async function riderMarkDelivered(formData: FormData) {
   if (!Number.isFinite(orderId) || orderId < 1) redirect("/rider");
 
   await claimRiderOrder(supabase, orderId, user.id);
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("id", orderId)
+    .eq("rider_id", user.id)
+    .maybeSingle();
+  if (!order) return { error: "This order isn't assigned to you." };
 
-  const note = String(formData.get("delivery_proof_note") ?? "").trim();
-  const proofUrl = String(formData.get("delivery_proof_url") ?? "").trim();
+  const note = String(formData.get("delivery_proof_note") ?? "").trim().slice(0, 500);
+  const photo = formData.get("proof_photo");
+  let proof: string | null = null;
+  if (photo instanceof File && photo.size > 0) {
+    const up = await uploadDeliveryProof(orderId, photo);
+    if ("error" in up) return { error: up.error };
+    proof = up.stored;
+  }
 
   const { error } = await supabase
     .from("orders")
@@ -94,7 +109,7 @@ export async function riderMarkDelivered(formData: FormData) {
       order_status: "completed",
       payment_status: "paid",
       delivery_proof_note: note || null,
-      delivery_proof_url: proofUrl || null,
+      delivery_proof_url: proof,
       delivery_proof_at: new Date().toISOString(),
     })
     .eq("id", orderId)
@@ -102,9 +117,11 @@ export async function riderMarkDelivered(formData: FormData) {
 
   if (error) {
     console.error("riderMarkDelivered", error.message);
+    return { error: "Could not complete the delivery. Please try again." };
   }
 
   revalidatePath("/rider");
   revalidatePath(`/rider/order/${orderId}`);
+  revalidatePath("/admin", "layout");
   redirect(`/rider/order/${orderId}`);
 }

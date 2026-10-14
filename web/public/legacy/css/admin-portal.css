@@ -2260,3 +2260,40 @@ body.pos-fullscreen.pos-page {
 .staff-steps__item.is-current .staff-steps__label {
     color: var(--staff-text);
 }
+
+/* Order detail: proof of delivery */
+.staff-proof {
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--staff-border);
+}
+
+.staff-proof__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.staff-proof__img {
+    display: inline-block;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--staff-border);
+}
+
+.staff-proof__img img {
+    display: block;
+    max-width: min(100%, 320px);
+    max-height: 240px;
+    object-fit: cover;
+}
+
+.staff-proof__note {
+    margin: 0.6rem 0 0;
+    font-size: 0.875rem;
+    color: var(--staff-text);
+}

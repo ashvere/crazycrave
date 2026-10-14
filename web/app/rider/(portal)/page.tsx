@@ -6,6 +6,7 @@ import { RiderTopbar } from "@/components/rider/rider-topbar";
 import { RiderDockNav } from "@/components/rider/rider-dock-nav";
 import { RiderDashboard } from "@/components/rider/rider-dashboard";
 import { riderChatUnreadByOrder } from "@/lib/order-messages";
+import { proofImageUrl } from "@/lib/delivery-proof";
 
 export default async function RiderHomePage() {
   const supabase = await createClient();
@@ -17,7 +18,11 @@ export default async function RiderHomePage() {
   const profile = await fetchRiderProfile(supabase, user.id);
   if (!profile) redirect("/rider/login");
 
-  const orders = await fetchRiderOrders(supabase);
+  const orders = await Promise.all(
+    (await fetchRiderOrders(supabase)).map(async (o) =>
+      o.delivery_proof_url ? { ...o, delivery_proof_url: await proofImageUrl(o.delivery_proof_url) } : o
+    )
+  );
   const unread = await riderChatUnreadByOrder(
     supabase,
     orders.filter((o) => o.rider_id === user.id).map((o) => o.id)

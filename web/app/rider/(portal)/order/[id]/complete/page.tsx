@@ -7,7 +7,7 @@ import {
   fetchRiderOrderById,
   fetchRiderProfile,
 } from "@/lib/rider-data";
-import { riderMarkDelivered } from "@/app/rider/actions";
+import { RiderProofForm } from "@/components/rider/rider-proof-form";
 import { RiderTopbar } from "@/components/rider/rider-topbar";
 import { RiderDockNav } from "@/components/rider/rider-dock-nav";
 
@@ -42,44 +42,24 @@ export default async function RiderCompleteDeliveryPage({ params }: Props) {
     <>
       <RiderTopbar displayName={riderName} />
       <main className="rider-dash-page">
-        <div className="container-fluid rider-dash-page__inner" style={{ maxWidth: 520 }}>
-          <Link href={`/rider/order/${orderId}`} className="rider-login-panel__back d-inline-flex mb-3">
+        <div className="container-fluid rider-dash-page__inner" style={{ maxWidth: 560 }}>
+          <Link href={`/rider/order/${orderId}`} className="rider-back">
             <i className="bi bi-arrow-left" aria-hidden="true" />
             <span>Order #{orderId}</span>
           </Link>
-          <h1 className="h5 fw-bold mb-2">Mark delivery complete</h1>
-          <p className="text-muted small mb-4">
-            Optional: paste a public image URL as proof (full photo upload can be added later).
+          <p className="rider-dash-header__kicker">Last step</p>
+          <h1 className="rider-dash-header__title mb-1">Complete delivery</h1>
+          <p className="rider-dash-header__lede mb-3">
+            Hand over the order to {order.customer_display_name || "the customer"}, then confirm here.
           </p>
-          <form action={riderMarkDelivered} className="rider-dash-surface p-3 p-md-4">
-            <input type="hidden" name="order_id" value={orderId} />
-            <div className="mb-3">
-              <label className="form-label fw-semibold" htmlFor="proof-url">
-                Proof image URL (optional)
-              </label>
-              <input
-                type="url"
-                className="form-control"
-                id="proof-url"
-                name="delivery_proof_url"
-                placeholder="https://…"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="form-label fw-semibold" htmlFor="proof-note">
-                Note (optional)
-              </label>
-              <textarea
-                className="form-control"
-                id="proof-note"
-                name="delivery_proof_note"
-                rows={2}
-              />
-            </div>
-            <button type="submit" className="btn btn-dark w-100 fw-semibold">
-              Complete delivery
-            </button>
-          </form>
+          <RiderProofForm
+            orderId={orderId}
+            collect={
+              String(order.payment_method ?? "").toLowerCase() === "cod"
+                ? `₱${Number(order.total).toFixed(2)}`
+                : null
+            }
+          />
         </div>
       </main>
       <RiderDockNav />

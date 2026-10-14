@@ -12,6 +12,10 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Delivery proof photos go through a server action (resized on the phone first).
+    serverActions: { bodySizeLimit: "5mb" },
+  },
   env: {
     /** Changes every deploy; appended to /legacy/css links so browsers and the PWA cache drop old styles. */
     NEXT_PUBLIC_ASSET_VERSION: (process.env.VERCEL_GIT_COMMIT_SHA ?? String(Date.now())).slice(0, 8),

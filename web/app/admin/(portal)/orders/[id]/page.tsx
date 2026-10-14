@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
+import { proofImageUrl } from "@/lib/delivery-proof";
 import {
   DeliveryStatusPill,
   OrderStatusPill,
@@ -91,6 +92,9 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
     { key: "on_the_way", label: "On the way" },
     { key: "delivered", label: "Delivered" },
   ] as const;
+  const proofImg = await proofImageUrl(order.delivery_proof_url as string | null);
+  const proofNote = (order.delivery_proof_note as string | null)?.trim() || null;
+  const proofAt = order.delivery_proof_at ? placedFmt.format(new Date(order.delivery_proof_at as string)) : null;
   const stepIdx = Math.max(0, DELIVERY_STEPS.findIndex((st) => st.key === order.delivery_status));
   const shopName = (order.restaurants as { name: string } | null)?.name ?? "Shop";
 
@@ -234,6 +238,21 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
                   </li>
                 ))}
               </ol>
+              {proofImg || proofNote ? (
+                <div className="staff-proof">
+                  <p className="staff-proof__title">
+                    <i className="bi bi-camera" aria-hidden="true" /> Proof of delivery
+                    {proofAt ? <span className="staff-muted fw-normal"> · {proofAt}</span> : null}
+                  </p>
+                  {proofImg ? (
+                    <a href={proofImg} target="_blank" rel="noopener noreferrer" className="staff-proof__img">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={proofImg} alt={`Proof of delivery for order #${id}`} loading="lazy" />
+                    </a>
+                  ) : null}
+                  {proofNote ? <p className="staff-proof__note">{proofNote}</p> : null}
+                </div>
+              ) : null}
               {assignable.length > 1 ? (
                 <div className="d-flex flex-wrap align-items-center gap-2 mt-3">
                   <span className="staff-muted small">Reassign</span>

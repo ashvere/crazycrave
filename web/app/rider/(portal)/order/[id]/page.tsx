@@ -11,6 +11,7 @@ import { RiderTopbar } from "@/components/rider/rider-topbar";
 import { RiderDockNav } from "@/components/rider/rider-dock-nav";
 import { RiderOrderDetail } from "@/components/rider/rider-order-detail";
 import { riderChatUnreadByOrder } from "@/lib/order-messages";
+import { proofImageUrl } from "@/lib/delivery-proof";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -31,6 +32,7 @@ export default async function RiderOrderPage({ params }: Props) {
   await claimRiderOrder(supabase, orderId, user.id);
   const order = await fetchRiderOrderById(supabase, orderId);
   if (!order || order.rider_id !== user.id) redirect("/rider");
+  order.delivery_proof_url = await proofImageUrl(order.delivery_proof_url);
 
   const [items, unread] = await Promise.all([
     fetchOrderItems(supabase, orderId),

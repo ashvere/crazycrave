@@ -3,30 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { riderMarkDelivered } from "@/app/rider/actions";
 import { RiderCamera } from "@/components/rider/rider-camera";
-
-const MAX_SIDE = 1600;
-const QUALITY = 0.8;
-
-/** Shrink a phone photo to ≤1600px JPEG so it uploads fast on mobile data. */
-async function shrink(file: File): Promise<File> {
-  if (!file.type.startsWith("image/")) return file;
-  try {
-    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-    const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
-    const w = Math.round(bitmap.width * scale);
-    const h = Math.round(bitmap.height * scale);
-    const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
-    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, w, h);
-    bitmap.close();
-    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", QUALITY));
-    if (!blob || blob.size >= file.size) return file;
-    return new File([blob], "proof.jpg", { type: "image/jpeg" });
-  } catch {
-    return file; // Unsupported format for decoding (e.g. HEIC on some browsers): send as-is.
-  }
-}
+import { shrinkImage } from "@/lib/shrink-image";
 
 export function RiderProofForm({ orderId, collect }: { orderId: number; collect: string | null }) {
   const [photo, setPhoto] = useState<File | null>(null);
@@ -52,7 +29,7 @@ export function RiderProofForm({ orderId, collect }: { orderId: number; collect:
     }
     setError(null);
     setPreparing(true);
-    const small = await shrink(f);
+    const small = await shrinkImage(f, "proof.jpg");
     setPreparing(false);
     if (small.size > 4 * 1024 * 1024) {
       setError("That photo is too large (max 4 MB). Try taking it again.");

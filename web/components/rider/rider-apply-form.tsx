@@ -4,6 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { shrinkImage } from "@/lib/shrink-image";
+
+/** Vercel rejects request bodies over ~4.5 MB; keep headroom for the text fields. */
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 type Step = 1 | 2;
 
@@ -95,14 +99,26 @@ export function RiderApplyForm() {
       setError("Please upload a valid ID.");
       return;
     }
-    fd.set("doc_license", licFile);
-    fd.set("doc_id", idFile);
+    // Phone photos are often 3–5 MB each; shrink them so the upload fits.
+    const [lic, idPhoto] = await Promise.all([shrinkImage(licFile, "license.jpg"), shrinkImage(idFile, "id.jpg")]);
+    if (lic.size + idPhoto.size > MAX_UPLOAD_BYTES) {
+      setLoading(false);
+      setError("Your files are too large to upload together (max 4 MB). Use photos instead of large PDFs, or retake them.");
+      return;
+    }
+    fd.set("doc_license", lic);
+    fd.set("doc_id", idPhoto);
 
     try {
       const res = await fetch("/api/rider/apply", { method: "POST", body: fd });
-      const data = (await res.json()) as { ok?: boolean; error?: string; message?: string };
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; message?: string };
       if (!res.ok) {
-        setError(data.error ?? "Could not submit application.");
+        setError(
+          data.error ??
+            (res.status === 413
+              ? "Your files are too large to upload. Please use smaller photos."
+              : "Could not submit application. Please try again.")
+        );
         setLoading(false);
         return;
       }

@@ -54,3 +54,63 @@ export async function setRiderApproval(formData: FormData): Promise<void> {
   revalidatePath("/admin/riders");
   redirect(`/admin/riders?tab=${tab}&done=${status}`);
 }
+
+/**
+ * Create an approved rider account directly (legacy admin/add-rider.php), skipping /rider/apply.
+ */
+export async function createRider(formData: FormData): Promise<void> {
+  const staff = await getStaffSession();
+  if (!staff || staff.role !== "admin") redirect("/admin");
+
+  const name = String(formData.get("name") ?? "").trim().slice(0, 120);
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const phone = String(formData.get("phone") ?? "").replace(/\D/g, "").slice(0, 15) || null;
+  const vehicleType = String(formData.get("vehicle_type") ?? "motorcycle");
+  const plate = String(formData.get("vehicle_plate") ?? "").trim().slice(0, 20) || null;
+  const shopId = parseInt(String(formData.get("restaurant_id") ?? ""), 10);
+
+  if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8) {
+    redirect("/admin/riders?tab=approved&error=rider_fields");
+  }
+  const admin = createAdminClient();
+  if (!admin) redirect("/admin/riders?tab=approved&error=config");
+
+  const { data: created, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { display_name: name, signup_role: "rider" },
+  });
+  if (error || !created.user) {
+    redirect(`/admin/riders?tab=approved&error=${/already|registered|exists/i.test(error?.message ?? "") ? "rider_email" : "failed"}`);
+  }
+  const id = created.user.id;
+
+  const { error: profErr } = await admin
+    .from("profiles")
+    .update({
+      display_name: name,
+      role: "rider",
+      approval_status: "approved",
+      restaurant_id: Number.isFinite(shopId) && shopId > 0 ? shopId : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (profErr) redirect("/admin/riders?tab=approved&error=failed");
+
+  await admin.from("rider_profiles").upsert(
+    {
+      user_id: id,
+      phone,
+      vehicle_type: ["motorcycle", "bicycle", "car"].includes(vehicleType) ? vehicleType : "motorcycle",
+      vehicle_plate: plate,
+      fleet_status: "available",
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
+
+  revalidatePath("/admin/riders");
+  redirect("/admin/riders?tab=approved&done=created");
+}

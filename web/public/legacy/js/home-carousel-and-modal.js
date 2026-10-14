@@ -506,7 +506,7 @@
       var num = parseFloat(price, 10);
       if (priceLine) priceLine.textContent = isNaN(num) ? '' : '₱' + num.toFixed(2);
       if (img) {
-        img.src = imgBase + encMenuImagePath(image);
+        img.src = /^https?:///i.test(image || "") ? image : imgBase + encMenuImagePath(image);
         img.alt = name;
       }
       if (descEl) {

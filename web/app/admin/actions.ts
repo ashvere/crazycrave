@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabasePublicConfig } from "@/lib/supabase/env";
 import { fetchProfileRole } from "@/lib/supabase/profile-role";
 import { getStaffSession, staffShopId, type StaffSession } from "@/lib/staff-session";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { MENU_IMAGE_BUCKET, uploadPublicImage } from "@/lib/shop-logos";
 
 export type StaffSignInResult = { error: string } | { ok: true };
 
@@ -172,6 +174,22 @@ function assertMenuShop(staff: StaffSession | null, shopId: number): string | nu
   return null;
 }
 
+/** Uploaded photo wins over the typed legacy path; neither keeps `fallback`. */
+async function menuImageFromForm(
+  formData: FormData,
+  fallback: string | null
+): Promise<{ image: string | null } | { error: string }> {
+  const file = formData.get("image_file");
+  if (file instanceof File && file.size > 0) {
+    const admin = createAdminClient();
+    if (!admin) return { error: "Image upload needs SUPABASE_SERVICE_ROLE_KEY on the server." };
+    const up = await uploadPublicImage(admin, MENU_IMAGE_BUCKET, file);
+    return "error" in up ? up : { image: up.url };
+  }
+  const typed = String(formData.get("image") ?? "").trim();
+  return { image: typed || fallback };
+}
+
 export async function createMenuItem(formData: FormData) {
   const staff = await getStaffSession();
   const shopId = parseInt(String(formData.get("shop_id") ?? ""), 10);
@@ -180,8 +198,11 @@ export async function createMenuItem(formData: FormData) {
 
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim().slice(0, 80) || null;
   const priceRaw = String(formData.get("price") ?? "").trim();
-  const image = String(formData.get("image") ?? "").trim() || null;
+  const img = await menuImageFromForm(formData, null);
+  if ("error" in img) return { error: img.error };
+  const image = img.image;
   const price = parseFloat(priceRaw);
 
   if (name.length < 1 || !Number.isFinite(price)) {
@@ -195,6 +216,7 @@ export async function createMenuItem(formData: FormData) {
     description,
     price,
     image,
+    category,
     is_active: true,
   });
 
@@ -220,7 +242,7 @@ export async function updateMenuItem(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const price = parseFloat(String(formData.get("price") ?? ""));
-  const image = String(formData.get("image") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim().slice(0, 80) || null;
   if (name.length < 1 || !Number.isFinite(price)) {
     return { error: "Invalid fields" };
   }
@@ -228,19 +250,67 @@ export async function updateMenuItem(formData: FormData) {
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("menus")
-    .select("id, restaurant_id")
+    .select("id, restaurant_id, image")
     .eq("id", menuId)
     .maybeSingle();
   if (!existing || existing.restaurant_id !== shopId) {
     return { error: "Menu not found" };
   }
 
+  const img = await menuImageFromForm(formData, null);
+  if ("error" in img) return { error: img.error };
+  const image = img.image;
+
   const { error } = await supabase
     .from("menus")
-    .update({ name, description, price, image })
+    .update({ name, description, price, image, category })
     .eq("id", menuId);
 
   if (error) return { error: error.message };
   revalidatePath("/admin/menus");
   return { ok: true as const, shopId };
+}
+
+/** Turn a menu item on/off for customers (legacy toggle-menu.php). */
+export async function toggleMenuItem(formData: FormData): Promise<void> {
+  const staff = await getStaffSession();
+  const menuId = parseInt(String(formData.get("menu_id") ?? ""), 10);
+  const shopId = parseInt(String(formData.get("shop_id") ?? ""), 10);
+  if (assertMenuShop(staff, shopId) || !Number.isFinite(menuId)) return;
+
+  const supabase = await createClient();
+  const { data: m } = await supabase
+    .from("menus")
+    .select("is_active")
+    .eq("id", menuId)
+    .eq("restaurant_id", shopId)
+    .maybeSingle();
+  if (!m) return;
+  await supabase.from("menus").update({ is_active: !m.is_active }).eq("id", menuId);
+  revalidatePath("/admin/menus");
+  revalidatePath("/");
+  revalidatePath("/restaurant");
+}
+
+/**
+ * Delete a menu item (legacy delete-menu.php). Items already on past orders are
+ * referenced by order_items, so those are switched off instead of deleted.
+ */
+export async function deleteMenuItem(formData: FormData): Promise<void> {
+  const staff = await getStaffSession();
+  const menuId = parseInt(String(formData.get("menu_id") ?? ""), 10);
+  const shopId = parseInt(String(formData.get("shop_id") ?? ""), 10);
+  if (assertMenuShop(staff, shopId) || !Number.isFinite(menuId)) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("menus").delete().eq("id", menuId).eq("restaurant_id", shopId);
+  if (error) {
+    await supabase.from("menus").update({ is_active: false }).eq("id", menuId).eq("restaurant_id", shopId);
+    revalidatePath("/admin/menus");
+    redirect(`/admin/menus?shop_id=${shopId}&notice=kept`);
+  }
+  revalidatePath("/admin/menus");
+  revalidatePath("/");
+  revalidatePath("/restaurant");
+  redirect(`/admin/menus?shop_id=${shopId}&notice=deleted`);
 }

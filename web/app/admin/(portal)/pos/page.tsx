@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { encodeMenuImagePath } from "@/lib/cart-cookies";
+import { menuImageSrc } from "@/lib/shop-logos";
 import { requireStaff } from "@/lib/staff-session";
 import { resolveStaffShop } from "@/lib/admin-shop-scope";
 import { ShopPicker } from "@/components/admin/shop-picker";
@@ -40,7 +40,7 @@ export default async function AdminPosPage({ searchParams }: { searchParams: Sea
     name: String(m.name),
     price: Number(m.price),
     category: (m.category as string | null) ?? null,
-    imageSrc: m.image ? `/images/menus/${encodeMenuImagePath(String(m.image))}` : "/images/menus/default.png",
+    imageSrc: menuImageSrc(m.image as string | null),
   }));
 
   return (

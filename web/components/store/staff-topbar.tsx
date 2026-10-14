@@ -28,6 +28,7 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
   const riders = pathname.startsWith("/admin/riders");
   const customers = pathname.startsWith("/admin/customers");
   const reviews = pathname.startsWith("/admin/reviews");
+  const earnings = pathname.startsWith("/admin/earnings");
   const kds = pathname.startsWith("/admin/kds");
   const pos = pathname.startsWith("/admin/pos");
   const menu = pathname.startsWith("/admin/menus");
@@ -116,6 +117,10 @@ export function StaffTopbar({ displayName, role, restaurantId }: StaffTopbarProp
               <Link href={`/admin/recipes${shopQs}`} className={linkClass(recipes)}>
                 <i className="bi bi-book" aria-hidden="true" />
                 <span>Recipes</span>
+              </Link>
+              <Link href={`/admin/earnings${shopQs}`} className={linkClass(earnings)}>
+                <i className="bi bi-cash-stack" aria-hidden="true" />
+                <span>Earnings</span>
               </Link>
               <Link href="/admin/reviews" className={linkClass(reviews)}>
                 <i className="bi bi-star" aria-hidden="true" />

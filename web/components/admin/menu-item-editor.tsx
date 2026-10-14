@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createMenuItem, updateMenuItem } from "@/app/admin/actions";
+import { menuImageSrc } from "@/lib/shop-logos";
 
 type Menu = {
   id: number;
@@ -11,6 +12,7 @@ type Menu = {
   description: string | null;
   price: number;
   image: string | null;
+  category?: string | null;
 };
 
 export function MenuItemEditor({
@@ -27,6 +29,7 @@ export function MenuItemEditor({
   const router = useRouter();
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(menu?.image ? menuImageSrc(menu.image) : null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -106,19 +109,49 @@ export function MenuItemEditor({
           />
         </div>
         <div className="mb-3">
-          <label className="form-label" htmlFor="m-img">
-            Image path
+          <label className="form-label" htmlFor="m-cat">
+            Category
           </label>
           <input
-            id="m-img"
-            name="image"
+            id="m-cat"
+            name="category"
             className="form-control"
-            placeholder="e.g. crispy_king/chicken.jpg"
-            defaultValue={menu?.image ?? ""}
+            placeholder="e.g. Chicken, Sides, Drinks"
+            defaultValue={menu?.category ?? ""}
           />
-          <p className="small text-muted mt-1">
-            Relative to <code>images/menus/</code> (same as storefront).
-          </p>
+        </div>
+        <div className="mb-3">
+          <label className="form-label" htmlFor="m-file">
+            Photo
+          </label>
+          {preview ? (
+            <img src={preview} alt="" className="d-block rounded border mb-2" style={{ width: 160, height: 120, objectFit: "cover" }} />
+          ) : null}
+          <input
+            id="m-file"
+            name="image_file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="form-control"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              setPreview(f ? URL.createObjectURL(f) : menu?.image ? menuImageSrc(menu.image) : null);
+            }}
+          />
+          <p className="small text-muted mt-1 mb-2">JPG, PNG or WebP up to 2 MB.{mode === "edit" ? " Leave empty to keep the current photo." : ""}</p>
+          <details>
+            <summary className="small text-muted">Or use an existing image path</summary>
+            <input
+              id="m-img"
+              name="image"
+              className="form-control form-control-sm mt-2"
+              placeholder="e.g. crispy_king/chicken.jpg"
+              defaultValue={menu?.image ?? ""}
+            />
+            <p className="small text-muted mt-1 mb-0">
+              Relative to <code>images/menus/</code>, or a full image URL.
+            </p>
+          </details>
         </div>
         <button type="submit" className="staff-btn staff-btn--primary" disabled={loading}>
           {loading ? "Saving…" : mode === "create" ? "Create item" : "Save changes"}

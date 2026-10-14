@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { menuImageSrc } from "@/lib/shop-logos";
 import { cookies } from "next/headers";
 import {
   COOKIE_CART,
   COOKIE_CART_SHOP,
   COOKIE_CHECKOUT_PREFILL,
   cartItemCount,
-  encodeMenuImagePath,
   parseCartJson,
 } from "@/lib/cart-cookies";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -118,9 +118,7 @@ export default async function CartPage({ searchParams }: Props) {
             {prefillNote ? <p className="small text-muted mb-3">{prefillNote}</p> : null}
             <ul className="kk-cart-list">
               {lines.map((item) => {
-                const imgPath = item.image
-                  ? `/images/menus/${encodeMenuImagePath(item.image)}`
-                  : "/images/menus/default.png";
+                const imgPath = menuImageSrc(item.image);
                 return (
                   <li key={item.menu_id} className="kk-cart-line">
                     <img src={imgPath} alt="" width={64} height={64} className="kk-cart-line__img" loading="lazy" />

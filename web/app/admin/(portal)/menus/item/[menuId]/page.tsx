@@ -56,6 +56,7 @@ export default async function AdminEditMenuPage({
         description: menu.description as string | null,
         price: Number(menu.price),
         image: menu.image as string | null,
+        category: (menu.category as string | null) ?? null,
       }}
     />
   );

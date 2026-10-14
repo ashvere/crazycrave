@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { MenuRow, ShopRow } from "@/lib/menu-catalog";
-import { encodeMenuImagePath } from "@/lib/cart-cookies";
-import { shopLogoSrc } from "@/lib/shop-logos";
+import { menuImageSrc, shopLogoSrc } from "@/lib/shop-logos";
 import { CartBar, QtyStepper } from "@/components/store/cart-controls";
 
 type Props = {
@@ -121,9 +120,7 @@ export function RestaurantMenuPage({
             <ul className="kk-menu-list" aria-label={`${shop.name} menu`}>
               {menus.map((menu) => {
                 const mid = menu.id;
-                const imgSrc = menu.image
-                  ? `/images/menus/${encodeMenuImagePath(menu.image)}`
-                  : "/images/menus/default.png";
+                const imgSrc = menuImageSrc(menu.image);
                 const desc = (menu.description ?? "").trim();
                 const inCart = cartQty[String(mid)] ?? 0;
                 const justAdded = addedId === mid;

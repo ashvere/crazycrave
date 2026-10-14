@@ -1,11 +1,18 @@
 import Link from "next/link";
+import { menuImageSrc } from "@/lib/shop-logos";
 import { createClient } from "@/lib/supabase/server";
-import { encodeMenuImagePath } from "@/lib/cart-cookies";
 import { requireStaff } from "@/lib/staff-session";
 import { resolveStaffShop } from "@/lib/admin-shop-scope";
 import { ShopPicker } from "@/components/admin/shop-picker";
+import { ConfirmSubmit } from "@/components/admin/confirm-submit";
+import { deleteMenuItem, toggleMenuItem } from "@/app/admin/actions";
 
-type SearchParams = Promise<{ shop_id?: string }>;
+type SearchParams = Promise<{ shop_id?: string; notice?: string }>;
+
+const NOTICES: Record<string, { kind: string; text: string }> = {
+  deleted: { kind: "success", text: "Menu item deleted." },
+  kept: { kind: "warning", text: "That item is on past orders, so it was switched off instead of deleted." },
+};
 
 export default async function AdminMenusPage({
   searchParams,
@@ -57,6 +64,10 @@ export default async function AdminMenusPage({
         <ShopPicker basePath="/admin/menus" shops={shops} current={shopId} />
       ) : null}
 
+      {NOTICES[sp.notice ?? ""] ? (
+        <div className={`alert alert-${NOTICES[sp.notice ?? ""].kind}`}>{NOTICES[sp.notice ?? ""].text}</div>
+      ) : null}
+
       {items.length === 0 ? (
         <p className="staff-empty">
           No menus yet.{" "}
@@ -73,9 +84,7 @@ export default async function AdminMenusPage({
               image: string | null;
               is_active: boolean;
             };
-            const image = m.image
-              ? `/images/menus/${encodeMenuImagePath(m.image)}`
-              : "/images/menus/default.png";
+            const image = menuImageSrc(m.image);
             return (
               <article
                 key={m.id}
@@ -97,9 +106,21 @@ export default async function AdminMenusPage({
                     >
                       Edit
                     </Link>
-                    {!m.is_active ? (
-                      <span className="badge bg-secondary">Off</span>
-                    ) : null}
+                    <form action={toggleMenuItem}>
+                      <input type="hidden" name="menu_id" value={m.id} />
+                      <input type="hidden" name="shop_id" value={shopId} />
+                      <button type="submit" className={`staff-chip ${m.is_active ? "staff-chip--menus" : "staff-chip--edit"} border-0`}>
+                        {m.is_active ? "Turn off" : "Turn on"}
+                      </button>
+                    </form>
+                    <form action={deleteMenuItem}>
+                      <input type="hidden" name="menu_id" value={m.id} />
+                      <input type="hidden" name="shop_id" value={shopId} />
+                      <ConfirmSubmit message={`Delete ${m.name}?`} className="staff-chip border-0 text-danger">
+                        Delete
+                      </ConfirmSubmit>
+                    </form>
+                    {!m.is_active ? <span className="badge bg-secondary">Off</span> : null}
                   </div>
                 </div>
               </article>

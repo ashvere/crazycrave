@@ -99,6 +99,15 @@ export default async function AdminShopsPage({ searchParams }: { searchParams: S
                     <Link href={`/admin/menus?shop_id=${shop.id}`} className="staff-chip staff-chip--menus">
                       Menu
                     </Link>
+                    <Link href={`/admin/inventory?shop_id=${shop.id}`} className="staff-chip staff-chip--edit">
+                      Stock
+                    </Link>
+                    <Link href={`/admin/recipes?shop_id=${shop.id}`} className="staff-chip staff-chip--menus">
+                      Recipes
+                    </Link>
+                    <Link href={`/admin/earnings?shop_id=${shop.id}`} className="staff-chip staff-chip--edit">
+                      Earnings
+                    </Link>
                   </div>
 
                   <footer className="staff-shop-card__footer">

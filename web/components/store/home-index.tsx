@@ -1,7 +1,6 @@
 import Script from "next/script";
 import type { CatalogItem, MenuRow, ShopRow } from "@/lib/menu-catalog";
-import { encodeMenuImagePath } from "@/lib/cart-cookies";
-import { shopLogoSrc } from "@/lib/shop-logos";
+import { menuImageSrc, shopLogoSrc } from "@/lib/shop-logos";
 import barangayMap from "@/lib/data/barangay-pototan.json";
 import { HomeMenuModal } from "@/components/store/home-menu-modal";
 
@@ -207,7 +206,7 @@ export function HomeIndex({
                               >
                                 <span className="shop-card__menu-chip-img">
                                   <img
-                                    src={`/images/menus/${encodeMenuImagePath(item.image ?? "")}`}
+                                    src={menuImageSrc(item.image)}
                                     alt={item.name}
                                     width={72}
                                     height={72}
@@ -329,7 +328,7 @@ export function HomeIndex({
                                         >
                                           <span className="home-menu-tile__img">
                                             <img
-                                              src={`/images/menus/${encodeMenuImagePath(item.image ?? "")}`}
+                                              src={menuImageSrc(item.image)}
                                               alt=""
                                               width={380}
                                               height={285}

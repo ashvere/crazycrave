@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/staff-session";
-import { setRiderApproval } from "./actions";
+import { createRider, setRiderApproval } from "./actions";
 import { Stars } from "@/components/stars";
 import { riderRatings } from "@/lib/ratings";
 
@@ -27,6 +27,9 @@ const NOTICES: Record<string, { kind: string; text: string }> = {
   invalid: { kind: "warning", text: "That request was not valid." },
   config: { kind: "warning", text: "Server is missing SUPABASE_SERVICE_ROLE_KEY." },
   failed: { kind: "danger", text: "Could not update the rider. Please try again." },
+  created: { kind: "success", text: "Rider account created — they can sign in at /rider/login now." },
+  rider_fields: { kind: "warning", text: "Enter a name, a valid email, and a password of at least 8 characters." },
+  rider_email: { kind: "warning", text: "That email already has an account." },
 };
 
 type Search = Promise<{ tab?: string; done?: string; error?: string }>;
@@ -100,6 +103,59 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
       </div>
 
       {notice ? <div className={`alert alert-${notice.kind}`}>{notice.text}</div> : null}
+
+      <details className="staff-panel mb-3">
+        <summary className="staff-panel__head" style={{ cursor: "pointer" }}>
+          <i className="bi bi-person-plus" aria-hidden="true" />
+          <span>Add rider directly</span>
+        </summary>
+        <form action={createRider} className="staff-panel__body row g-2">
+          <div className="col-12 col-md-4">
+            <label className="form-label small mb-1" htmlFor="nr-name">Name</label>
+            <input id="nr-name" name="name" className="form-control form-control-sm" required />
+          </div>
+          <div className="col-12 col-md-4">
+            <label className="form-label small mb-1" htmlFor="nr-email">Email</label>
+            <input id="nr-email" name="email" type="email" className="form-control form-control-sm" required autoComplete="off" />
+          </div>
+          <div className="col-12 col-md-4">
+            <label className="form-label small mb-1" htmlFor="nr-pw">Password</label>
+            <input id="nr-pw" name="password" type="password" minLength={8} className="form-control form-control-sm" required autoComplete="new-password" />
+          </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label small mb-1" htmlFor="nr-phone">Phone</label>
+            <input id="nr-phone" name="phone" inputMode="numeric" className="form-control form-control-sm" />
+          </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label small mb-1" htmlFor="nr-vehicle">Vehicle</label>
+            <select id="nr-vehicle" name="vehicle_type" className="form-select form-select-sm">
+              <option value="motorcycle">Motorcycle</option>
+              <option value="bicycle">Bicycle</option>
+              <option value="car">Car</option>
+            </select>
+          </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label small mb-1" htmlFor="nr-plate">Plate</label>
+            <input id="nr-plate" name="vehicle_plate" className="form-control form-control-sm" />
+          </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label small mb-1" htmlFor="nr-shop">Delivers for</label>
+            <select id="nr-shop" name="restaurant_id" className="form-select form-select-sm" defaultValue="">
+              <option value="">All shops</option>
+              {(shops ?? []).map((s) => (
+                <option key={String(s.id)} value={String(s.id)}>
+                  {String(s.name)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12">
+            <button type="submit" className="btn btn-sm btn-dark rounded-pill px-3">
+              Create rider
+            </button>
+          </div>
+        </form>
+      </details>
 
       <ul className="nav nav-pills gap-2 mb-3">
         {TABS.map((t) => (

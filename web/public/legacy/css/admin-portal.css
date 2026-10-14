@@ -2159,3 +2159,104 @@ body.pos-fullscreen.pos-page {
         padding: 0 0.9rem;
     }
 }
+
+/* Order detail: who is delivering + progress */
+.staff-rider-now {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.staff-rider-now__avatar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-weight: 700;
+}
+
+.staff-rider-now__main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.staff-rider-now__name {
+    margin: 0;
+    font-weight: 700;
+}
+
+.staff-steps {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 1.1rem 0 0;
+    padding: 0;
+}
+
+.staff-steps__item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.staff-steps__item::before {
+    content: "";
+    position: absolute;
+    top: 0.7rem;
+    left: -50%;
+    width: 100%;
+    height: 3px;
+    background: #e2e8f0;
+    z-index: 0;
+}
+
+.staff-steps__item:first-child::before {
+    display: none;
+}
+
+.staff-steps__item.is-done::before,
+.staff-steps__item.is-current::before {
+    background: #16a34a;
+}
+
+.staff-steps__dot {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #e2e8f0;
+    color: #fff;
+    font-size: 0.75rem;
+}
+
+.staff-steps__item.is-done .staff-steps__dot {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+
+.staff-steps__item.is-current .staff-steps__dot {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 4px #dcfce7;
+}
+
+.staff-steps__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--staff-muted);
+}
+
+.staff-steps__item.is-done .staff-steps__label,
+.staff-steps__item.is-current .staff-steps__label {
+    color: var(--staff-text);
+}

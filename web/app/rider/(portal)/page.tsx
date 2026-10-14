@@ -5,6 +5,7 @@ import { fetchRiderOrders, fetchRiderProfile } from "@/lib/rider-data";
 import { RiderTopbar } from "@/components/rider/rider-topbar";
 import { RiderDockNav } from "@/components/rider/rider-dock-nav";
 import { RiderDashboard } from "@/components/rider/rider-dashboard";
+import { riderChatUnreadByOrder } from "@/lib/order-messages";
 
 export default async function RiderHomePage() {
   const supabase = await createClient();
@@ -17,13 +18,17 @@ export default async function RiderHomePage() {
   if (!profile) redirect("/rider/login");
 
   const orders = await fetchRiderOrders(supabase);
+  const unread = await riderChatUnreadByOrder(
+    supabase,
+    orders.filter((o) => o.rider_id === user.id).map((o) => o.id)
+  );
   const riderName =
     profile.display_name?.trim() || user.email?.split("@")[0] || "Rider";
 
   return (
     <>
       <RiderTopbar displayName={riderName} />
-      <RiderDashboard orders={orders} riderName={riderName} />
+      <RiderDashboard orders={orders} riderName={riderName} chatUnread={Object.fromEntries(unread)} />
       <RiderDockNav />
       <Script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

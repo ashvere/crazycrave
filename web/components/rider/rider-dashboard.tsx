@@ -10,9 +10,11 @@ import { RiderDeliveryActions } from "@/components/rider/rider-delivery-actions"
 type Props = {
   orders: RiderOrderRow[];
   riderName: string;
+  /** Unread customer messages by order id. */
+  chatUnread?: Record<number, number>;
 };
 
-export function RiderDashboard({ orders, riderName }: Props) {
+export function RiderDashboard({ orders, riderName, chatUnread = {} }: Props) {
   const totalCount = orders.length;
   const activeCount = orders.filter(
     (o) => (o.delivery_status ?? "") !== "delivered"
@@ -102,6 +104,13 @@ export function RiderDashboard({ orders, riderName }: Props) {
                       <span className={`rider-pill ${ordMeta.className}`}>{ordMeta.label}</span>
                       <span className={`rider-pill ${delMeta.className}`}>{delMeta.label}</span>
                     </div>
+                    {(chatUnread[o.id] ?? 0) > 0 ? (
+                      <Link href={`/rider/order/${o.id}/chat`} className="rider-msg-chip">
+                        <i className="bi bi-chat-dots-fill" aria-hidden="true" />
+                        {chatUnread[o.id]} new message{chatUnread[o.id] === 1 ? "" : "s"} from customer
+                        <i className="bi bi-chevron-right ms-auto" aria-hidden="true" />
+                      </Link>
+                    ) : null}
                     {o.barangay ? (
                       <p className="rider-delivery-card__location">
                         <i className="bi bi-geo-alt" aria-hidden="true" />

@@ -10,6 +10,7 @@ import { RiderDeliveryActions } from "@/components/rider/rider-delivery-actions"
 type Props = {
   order: RiderOrderRow;
   items: RiderOrderItemRow[];
+  chatUnread?: number;
 };
 
 const PAYMENT: Record<string, { label: string; icon: string }> = {
@@ -31,7 +32,7 @@ function splitAddress(raw: string): { address: string; notes: string | null } {
   };
 }
 
-export function RiderOrderDetail({ order, items }: Props) {
+export function RiderOrderDetail({ order, items, chatUnread = 0 }: Props) {
   const oid = order.id;
   const deliveryStatus = order.delivery_status ?? "assigned";
   const delMeta = riderDeliveryStatusMeta(deliveryStatus);
@@ -120,9 +121,14 @@ export function RiderOrderDetail({ order, items }: Props) {
           </dl>
 
           <div className="rider-btn-row">
-            <Link href={`/rider/order/${oid}/chat`} className="rider-btn rider-btn--dark">
+            <Link
+              href={`/rider/order/${oid}/chat`}
+              className="rider-btn rider-btn--dark"
+              aria-label={chatUnread > 0 ? `Chat, ${chatUnread} new message${chatUnread === 1 ? "" : "s"}` : undefined}
+            >
               <i className="bi bi-chat-dots" aria-hidden="true" />
               Chat
+              {chatUnread > 0 ? <span className="rider-count" aria-hidden="true">{chatUnread}</span> : null}
             </Link>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsDest)}`}

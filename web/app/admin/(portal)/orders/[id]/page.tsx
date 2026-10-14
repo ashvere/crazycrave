@@ -75,6 +75,23 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
     .eq("restaurant_id", shopIdForRiders);
 
   const riders = (riderRows as { id: string; display_name: string | null }[] | null) ?? [];
+  const riderId = (order.rider_id as string | null) ?? null;
+  const { data: assigned } = riderId
+    ? await supabase.from("profiles").select("display_name").eq("id", riderId).maybeSingle()
+    : { data: null };
+  const riderName = (assigned?.display_name as string | null)?.trim() || (riderId ? "Rider" : null);
+  // Let staff reassign to the shop's riders, keeping the current rider selectable.
+  const assignable =
+    riderId && !riders.some((r) => r.id === riderId)
+      ? [{ id: riderId, display_name: riderName }, ...riders]
+      : riders;
+  const DELIVERY_STEPS = [
+    { key: "assigned", label: "Assigned" },
+    { key: "picked_up", label: "Picked up" },
+    { key: "on_the_way", label: "On the way" },
+    { key: "delivered", label: "Delivered" },
+  ] as const;
+  const stepIdx = Math.max(0, DELIVERY_STEPS.findIndex((st) => st.key === order.delivery_status));
   const shopName = (order.restaurants as { name: string } | null)?.name ?? "Shop";
 
   const items = ((lines ?? []) as { id: number; menu_name: string; price: number; quantity: number }[]).map(
@@ -192,25 +209,53 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
           <span>Rider</span>
         </div>
         <div className="staff-panel__body staff-panel__body--padded">
-          {riders.length === 0 ? (
+          {riderId ? (
+            <>
+              <div className="staff-rider-now">
+                <span className="staff-rider-now__avatar" aria-hidden="true">
+                  {(riderName ?? "R").charAt(0).toUpperCase()}
+                </span>
+                <div className="staff-rider-now__main">
+                  <p className="staff-rider-now__name">{riderName}</p>
+                  <p className="staff-muted small mb-0">Delivering this order</p>
+                </div>
+                <DeliveryStatusPill status={order.delivery_status as string} />
+              </div>
+              <ol className="staff-steps" aria-label="Delivery progress">
+                {DELIVERY_STEPS.map((st, i) => (
+                  <li
+                    key={st.key}
+                    className={`staff-steps__item${i < stepIdx ? " is-done" : i === stepIdx ? " is-current" : ""}`}
+                  >
+                    <span className="staff-steps__dot" aria-hidden="true">
+                      {i < stepIdx || (i === stepIdx && st.key === "delivered") ? <i className="bi bi-check-lg" /> : null}
+                    </span>
+                    <span className="staff-steps__label">{st.label}</span>
+                  </li>
+                ))}
+              </ol>
+              {assignable.length > 1 ? (
+                <div className="d-flex flex-wrap align-items-center gap-2 mt-3">
+                  <span className="staff-muted small">Reassign</span>
+                  <AssignRiderForm orderId={id} riders={assignable} currentRiderId={riderId} />
+                </div>
+              ) : null}
+            </>
+          ) : riders.length === 0 ? (
             <div className="staff-empty-inline">
               <i className="bi bi-person-x" aria-hidden="true" />
               <div>
-                <p className="mb-1 fw-medium">No riders available for {shopName} yet.</p>
+                <p className="mb-1 fw-medium">No rider on this order yet.</p>
                 <p className="staff-muted small mb-0">
-                  Approve a rider and link them to this shop on the{" "}
+                  Approve a rider and link them to {shopName} on the{" "}
                   <Link href="/admin/riders">Riders</Link> page, then assign them here.
                 </p>
               </div>
             </div>
           ) : (
             <div className="d-flex flex-wrap align-items-center gap-2">
-              <span className="staff-muted small">Assigned rider</span>
-              <AssignRiderForm
-                orderId={id}
-                riders={riders}
-                currentRiderId={(order.rider_id as string | null) ?? null}
-              />
+              <span className="staff-muted small">Assign a rider</span>
+              <AssignRiderForm orderId={id} riders={riders} currentRiderId={null} />
             </div>
           )}
         </div>

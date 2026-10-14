@@ -40,15 +40,32 @@ export async function riderUpdateDelivery(formData: FormData) {
     redirect(`/rider/order/${orderId}/complete`);
   }
 
+  // Once the rider has the food, the order is out for delivery: move the kitchen
+  // status along too so staff screens show it (never reopen cancelled/completed).
+  const { data: current } = await supabase
+    .from("orders")
+    .select("order_status")
+    .eq("id", orderId)
+    .eq("rider_id", user.id)
+    .maybeSingle();
+  const update: { delivery_status: string; order_status?: string } = { delivery_status: status };
+  if (
+    (status === "picked_up" || status === "on_the_way") &&
+    ["pending", "preparing"].includes(String(current?.order_status ?? ""))
+  ) {
+    update.order_status = "delivering";
+  }
+
   const { error } = await supabase
     .from("orders")
-    .update({ delivery_status: status })
+    .update(update)
     .eq("id", orderId)
     .eq("rider_id", user.id);
 
   if (error) {
     console.error("riderUpdateDelivery", error.message);
   }
+  revalidatePath("/admin", "layout");
 
   revalidatePath("/rider");
   revalidatePath(`/rider/order/${orderId}`);

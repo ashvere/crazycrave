@@ -279,7 +279,10 @@ export default async function AdminDashboardPage() {
                     <td>{order.customer_display_name}</td>
                     <td>₱{Number(order.total).toFixed(2)}</td>
                     <td>
-                      <OrderStatusPill status={order.order_status} />
+                      <div className="d-flex flex-wrap gap-1">
+                        <OrderStatusPill status={order.order_status} />
+                        {order.rider_id ? <DeliveryStatusPill status={order.delivery_status} /> : null}
+                      </div>
                     </td>
                     <td>
                       <Link

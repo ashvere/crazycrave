@@ -62,8 +62,19 @@ export default async function AdminOrdersPage() {
     riders = (r as { id: string; display_name: string | null }[] | null) ?? [];
   }
 
+  // Names of the riders who hold these orders (assigned rider may not be linked to the shop).
+  const riderIds = [...new Set(orders.map((o) => o.rider_id).filter((v): v is string => !!v))];
+  const riderNames = new Map<string, string>();
+  if (riderIds.length > 0) {
+    const { data: rn } = await supabase.from("profiles").select("id, display_name").in("id", riderIds);
+    for (const r of (rn ?? []) as { id: string; display_name: string | null }[]) {
+      riderNames.set(r.id, r.display_name?.trim() || "Rider");
+    }
+  }
+  const riderLabel = (o: OrderRow) => (o.rider_id ? riderNames.get(o.rider_id) ?? "Rider" : null);
+
   const showShop = shopScope === null;
-  const showDelivery = shopScope !== null;
+  const canAssign = shopScope !== null;
 
   return (
     <>
@@ -97,7 +108,7 @@ export default async function AdminOrdersPage() {
                     <th className="text-end">Total</th>
                     <th>Payment</th>
                     <th>Status</th>
-                    {showDelivery ? <th>Delivery</th> : null}
+                    <th>Delivery</th>
                     <th className="text-end">
                       <span className="visually-hidden">Actions</span>
                     </th>
@@ -122,14 +133,27 @@ export default async function AdminOrdersPage() {
                       <td>
                         <OrderStatusPill status={o.order_status} />
                       </td>
-                      {showDelivery ? (
-                        <td>
-                          <DeliveryStatusPill status={o.delivery_status} />
-                        </td>
-                      ) : null}
+                      <td>
+                        <div className="staff-stack">
+                          {o.rider_id ? (
+                            <DeliveryStatusPill status={o.delivery_status} />
+                          ) : (
+                            <span className="staff-pill staff-pill--slate">
+                              <i className="bi bi-person-dash" aria-hidden="true" />
+                              No rider yet
+                            </span>
+                          )}
+                          {riderLabel(o) ? (
+                            <span className="staff-order-time">
+                              <i className="bi bi-bicycle me-1" aria-hidden="true" />
+                              {riderLabel(o)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
                       <td className="text-end">
                         <div className="d-inline-flex flex-wrap gap-2 align-items-center justify-content-end">
-                          {showDelivery ? (
+                          {canAssign ? (
                             <AssignRiderForm orderId={o.id} riders={riders} currentRiderId={o.rider_id} />
                           ) : null}
                           <Link href={`/admin/orders/${o.id}`} className="staff-view-btn">
@@ -158,6 +182,7 @@ export default async function AdminOrdersPage() {
                       <div className="fw-semibold">{o.customer_display_name}</div>
                       <div className="staff-order-time">
                         {showShop && o.restaurants?.name ? `${o.restaurants.name} · ` : ""}
+                        {riderLabel(o) ? `${riderLabel(o)} · ` : ""}
                         {placedFmt.format(new Date(o.created_at))}
                       </div>
                     </div>
@@ -166,11 +191,15 @@ export default async function AdminOrdersPage() {
                   <div className="staff-order-card__meta">
                     <PaymentMethod method={o.payment_method} />
                     <PaymentStatusPill status={o.payment_status} />
-                    {showDelivery ? <DeliveryStatusPill status={o.delivery_status} /> : null}
+                    {o.rider_id ? (
+                      <DeliveryStatusPill status={o.delivery_status} />
+                    ) : (
+                      <span className="staff-pill staff-pill--slate">No rider yet</span>
+                    )}
                     <i className="bi bi-chevron-right ms-auto text-muted" aria-hidden="true" />
                   </div>
                 </Link>
-                {showDelivery ? (
+                {canAssign ? (
                   <div className="staff-order-card__rider">
                     <AssignRiderForm orderId={o.id} riders={riders} currentRiderId={o.rider_id} />
                   </div>

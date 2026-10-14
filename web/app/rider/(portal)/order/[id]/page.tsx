@@ -10,6 +10,7 @@ import {
 import { RiderTopbar } from "@/components/rider/rider-topbar";
 import { RiderDockNav } from "@/components/rider/rider-dock-nav";
 import { RiderOrderDetail } from "@/components/rider/rider-order-detail";
+import { riderChatUnreadByOrder } from "@/lib/order-messages";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -31,14 +32,17 @@ export default async function RiderOrderPage({ params }: Props) {
   const order = await fetchRiderOrderById(supabase, orderId);
   if (!order || order.rider_id !== user.id) redirect("/rider");
 
-  const items = await fetchOrderItems(supabase, orderId);
+  const [items, unread] = await Promise.all([
+    fetchOrderItems(supabase, orderId),
+    riderChatUnreadByOrder(supabase, [orderId]),
+  ]);
   const riderName =
     profile.display_name?.trim() || user.email?.split("@")[0] || "Rider";
 
   return (
     <>
       <RiderTopbar displayName={riderName} />
-      <RiderOrderDetail order={order} items={items} />
+      <RiderOrderDetail order={order} items={items} chatUnread={unread.get(orderId) ?? 0} />
       <RiderDockNav />
       <Script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

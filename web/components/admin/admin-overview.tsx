@@ -54,6 +54,7 @@ export async function AdminOverview() {
     const d = new Date(start.getTime() + i * 86400000 + 12 * 3600000);
     return {
       day: manilaDay(d),
+      // "Wed, Oct 14" (en-PH puts a comma after the weekday).
       label: d.toLocaleDateString("en-PH", { timeZone: "Asia/Manila", weekday: "short", month: "short", day: "numeric" }),
       sales: 0,
       revenue: 0,
@@ -167,14 +168,14 @@ export async function AdminOverview() {
           <i className="bi bi-graph-up" aria-hidden="true" />
           <span>Sales &amp; revenue · last 7 days</span>
         </div>
-        <div className="staff-panel__body">
-          <div className="d-flex flex-wrap gap-4 mb-3">
+        <div className="staff-panel__body staff-panel__body--padded">
+          <div className="sales-summary">
             <div>
               <p className="small text-muted mb-0">Sales</p>
               <p className="h5 fw-bold tabular-nums mb-0">{peso(week.sales)}</p>
             </div>
             <div>
-              <p className="small text-muted mb-0">Revenue collected</p>
+              <p className="small text-muted mb-0">Collected</p>
               <p className="h5 fw-bold tabular-nums mb-0">{peso(week.revenue)}</p>
             </div>
             <div>
@@ -182,7 +183,7 @@ export async function AdminOverview() {
               <p className="h5 fw-bold tabular-nums mb-0">{week.orders}</p>
             </div>
           </div>
-          <SalesChart days={days} />
+          <SalesChart days={days} today={today} />
           <p className="small text-muted mt-2 mb-0">
             Sales = all non-cancelled orders. Revenue = orders that are paid or completed.
           </p>

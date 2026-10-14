@@ -2651,3 +2651,47 @@ body.pos-fullscreen.pos-page {
         white-space: nowrap;
     }
 }
+
+/* —— Overview: 7-day sales —— */
+.sales-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+.sales-summary > div {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--staff-border);
+}
+.sales-days { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.sales-days tr + tr th,
+.sales-days tr + tr td { border-top: 1px solid var(--staff-border); }
+.sales-days th,
+.sales-days td { padding: 0.6rem 0.5rem; vertical-align: middle; }
+.sales-days__day { width: 9.5rem; font-weight: 600; white-space: nowrap; }
+.sales-days__today {
+    margin-left: 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--staff-accent-soft);
+    color: var(--staff-accent);
+}
+.sales-days__bar-cell { width: 45%; }
+.sales-days__track { display: block; height: 10px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+.sales-days__bar { display: block; height: 100%; border-radius: 999px; background: var(--staff-accent); }
+.sales-days__num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+.sales-days__muted { color: var(--staff-muted); font-weight: 400; }
+.sales-days tr.is-empty .sales-days__day { color: var(--staff-muted); font-weight: 500; }
+.sales-days tr.is-today { background: #f8faff; }
+@media (max-width: 767px) {
+    .sales-summary { grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+    .sales-summary > div { padding: 0.6rem; }
+    .sales-summary .h5 { font-size: 0.95rem; }
+    .sales-days__day { width: auto; }
+    .sales-days td:nth-child(4) { display: none; }
+    .sales-days__bar-cell { width: 30%; }
+}

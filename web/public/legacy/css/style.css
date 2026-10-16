@@ -4175,6 +4175,50 @@ body.profile-layout {
     font-size: 1.1rem;
 }
 
+.checkout-page__summary-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    padding: 0.9rem clamp(1rem, 2.5vw, 1.35rem);
+    border-bottom: 1px solid var(--color-line);
+}
+
+.checkout-page__summary-head .checkout-page__section-title {
+    margin: 0;
+}
+
+.checkout-page__back-cart {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-orange-dark);
+    background: var(--color-orange-soft);
+    border: 1px solid rgba(184, 74, 18, 0.25);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.checkout-page__back-cart:hover,
+.checkout-page__back-cart:focus-visible {
+    color: #fff;
+    background: var(--color-orange-dark);
+    border-color: var(--color-orange-dark);
+}
+
+.checkout-page__back-cart:hover .bi-arrow-left {
+    transform: translateX(-2px);
+}
+
+.checkout-page__back-cart .bi-arrow-left {
+    transition: transform 0.15s ease;
+}
+
 .checkout-page__scroll {
     margin: 0;
 }

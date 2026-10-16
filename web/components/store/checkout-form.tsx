@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { placeOrder } from "@/app/(store)/checkout/actions";
@@ -99,10 +100,17 @@ export function CheckoutForm({
     <div className="checkout-page__layout">
       <aside className="checkout-page__summary" aria-labelledby="checkout-summary-heading">
         <div className="checkout-page__surface">
-          <h2 id="checkout-summary-heading" className="checkout-page__section-title">
-            <i className="bi bi-bag-check" aria-hidden="true" />
-            <span>Your order</span>
-          </h2>
+          <div className="checkout-page__summary-head">
+            <h2 id="checkout-summary-heading" className="checkout-page__section-title">
+              <i className="bi bi-bag-check" aria-hidden="true" />
+              <span>Your order</span>
+            </h2>
+            <Link href="/cart" className="checkout-page__back-cart">
+              <i className="bi bi-arrow-left" aria-hidden="true" />
+              <i className="bi bi-bag" aria-hidden="true" />
+              <span>Back to cart</span>
+            </Link>
+          </div>
 
           <div className="table-responsive checkout-page__scroll">
             <table className="table table-hover checkout-page-table align-middle mb-0">

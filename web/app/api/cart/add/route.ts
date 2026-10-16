@@ -72,11 +72,15 @@ export async function POST(request: Request) {
     return go(u, request);
   }
 
+  // How many to add (the menu pop-up has a − / + stepper); defaults to one.
+  const addQtyRaw = Math.floor(Number(form.get("qty") ?? 1));
+  const addQty = Number.isFinite(addQtyRaw) ? Math.min(Math.max(addQtyRaw, 1), MAX_LINE_QTY) : 1;
+
   const keyStr = String(menuId);
   if (cart[keyStr]) {
     cart[keyStr] = {
       ...cart[keyStr],
-      qty: Math.min(cart[keyStr].qty + 1, MAX_LINE_QTY),
+      qty: Math.min(cart[keyStr].qty + addQty, MAX_LINE_QTY),
     };
   } else {
     cart[keyStr] = {
@@ -84,7 +88,7 @@ export async function POST(request: Request) {
       name: String(menu.name ?? ""),
       price: Number(menu.price),
       image: String(menu.image ?? ""),
-      qty: 1,
+      qty: addQty,
     };
   }
 

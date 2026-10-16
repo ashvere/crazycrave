@@ -360,6 +360,7 @@ export function HomeMenuModal({ barangayMap, scheduleMinDate }: Props) {
                 >
                   <input type="hidden" name="menu_id" id="kkHomeMenuInputMenuId" defaultValue="" />
                   <input type="hidden" name="shop_id" id="kkHomeMenuInputShopId" defaultValue="" />
+                  <input type="hidden" name="qty" id="kkHomeMenuInputQty" defaultValue="1" />
                   <input type="hidden" name="prefill_flow" id="kkPrefillFlow" defaultValue="" />
                   <input type="hidden" name="prefill_fulfillment" id="kkPrefillFulfillment" defaultValue="delivery" />
                   <input type="hidden" name="prefill_address" id="kkPrefillAddress" defaultValue="" />

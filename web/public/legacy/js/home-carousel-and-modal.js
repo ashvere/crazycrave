@@ -146,8 +146,19 @@
       return d.innerHTML;
     }
 
-    function kkMenuFoodPrice() {
+    var KK_MAX_QTY = 99;
+
+    function kkMenuQty() {
+      var q = parseInt(modalEl.getAttribute('data-kk-qty') || '1', 10);
+      return isNaN(q) || q < 1 ? 1 : Math.min(q, KK_MAX_QTY);
+    }
+
+    function kkMenuUnitPrice() {
       return parseFloat(modalEl.getAttribute('data-kk-item-price') || '0', 10) || 0;
+    }
+
+    function kkMenuFoodPrice() {
+      return kkMenuUnitPrice() * kkMenuQty();
     }
 
     var KK_PRIORITY_SURCHARGE = 30;
@@ -180,18 +191,45 @@
       if (elG) elG.textContent = tot.toFixed(2);
     }
 
-    function kkMenuFillMiniCart(name, priceStr) {
+    function kkMenuFillMiniCart(name) {
       if (!miniBody) return;
-      var price = parseFloat(priceStr || '0', 10) || 0;
+      var qty = kkMenuQty();
+      var safe = escapeHtml(name);
       var row = document.createElement('tr');
       row.innerHTML =
-        '<td>' +
-        escapeHtml(name) +
-        '</td><td class="text-end">1</td><td class="text-end">₱' +
-        price.toFixed(2) +
+        '<td class="align-middle">' +
+        safe +
+        '</td><td class="text-end align-middle">' +
+        '<div class="kk-qty kk-qty--sm">' +
+        '<button type="button" class="kk-qty__btn" data-kk-qty-op="dec" aria-label="One less ' + safe + '"' +
+        (qty <= 1 ? ' disabled' : '') +
+        '><i class="bi bi-dash-lg" aria-hidden="true"></i></button>' +
+        '<span class="kk-qty__value tabular-nums" aria-live="polite">' + qty + '</span>' +
+        '<button type="button" class="kk-qty__btn" data-kk-qty-op="inc" aria-label="One more ' + safe + '"' +
+        (qty >= KK_MAX_QTY ? ' disabled' : '') +
+        '><i class="bi bi-plus-lg" aria-hidden="true"></i></button>' +
+        '</div></td><td class="text-end align-middle tabular-nums">₱' +
+        kkMenuFoodPrice().toFixed(2) +
         '</td>';
       miniBody.innerHTML = '';
       miniBody.appendChild(row);
+    }
+
+    function kkMenuSetQty(q) {
+      q = Math.max(1, Math.min(KK_MAX_QTY, q));
+      modalEl.setAttribute('data-kk-qty', String(q));
+      var qInp = document.getElementById('kkHomeMenuInputQty');
+      if (qInp) qInp.value = String(q);
+      kkMenuFillMiniCart(modalEl.getAttribute('data-kk-item-name') || '');
+      kkMenuRefreshTotals();
+    }
+
+    if (miniBody) {
+      miniBody.addEventListener('click', function (ev) {
+        var b = ev.target.closest ? ev.target.closest('[data-kk-qty-op]') : null;
+        if (!b || b.disabled) return;
+        kkMenuSetQty(kkMenuQty() + (b.getAttribute('data-kk-qty-op') === 'inc' ? 1 : -1));
+      });
     }
 
     function kkMenuWireBarangay() {
@@ -490,6 +528,10 @@
       var mode = btn.getAttribute('data-kk-open') || 'cart';
       modalEl.setAttribute('data-kk-mode', mode);
       modalEl.setAttribute('data-kk-item-price', price);
+      modalEl.setAttribute('data-kk-item-name', name);
+      modalEl.setAttribute('data-kk-qty', '1');
+      var qtyInp = document.getElementById('kkHomeMenuInputQty');
+      if (qtyInp) qtyInp.value = '1';
       modalEl.removeAttribute('data-kk-sel-km');
 
       var titleEl = document.getElementById('kkHomeMenuModalLabel');
@@ -542,7 +584,7 @@
         shopLink.href = restaurantHref + sep + 'id=' + encodeURIComponent(shopId);
       }
 
-      kkMenuFillMiniCart(name, price);
+      kkMenuFillMiniCart(name);
 
       var fd = document.getElementById('kkOrderFulDelivery');
       var fp = document.getElementById('kkOrderFulPickup');

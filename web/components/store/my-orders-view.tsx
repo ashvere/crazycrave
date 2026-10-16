@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Stars } from "@/components/stars";
+import { orderReference } from "@/lib/receipt";
 import {
   customerCanCancel,
   customerDeliveryStatusLabel,
@@ -70,6 +71,11 @@ export function MyOrdersView({ orders, flash }: Props) {
                     <div>
                       <p className="my-orders-card__id mb-0">Order #{orderId}</p>
                       <p className="my-orders-card__shop mb-0">{shopName}</p>
+                      <p className="my-orders-card__ref mb-0">
+                        <span className="visually-hidden">Reference number: </span>
+                        <i className="bi bi-hash" aria-hidden="true" />
+                        {orderReference(orderId, order.created_at)}
+                      </p>
                     </div>
                     <p className="my-orders-card__total tabular-nums mb-0">
                       ₱{Number(order.total).toFixed(2)}

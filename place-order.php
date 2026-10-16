@@ -59,7 +59,7 @@ if ($fulfillment === 'pickup') {
     $distance_km = 0.0;
     $rider_fee = 0.0;
 } else {
-    $rider_fee = (float) (ceil($distance_km / 10) * 10);
+    $rider_fee = (float) (50 + max(0, ceil($distance_km - 5)) * 15);
 }
 
 $delivery_option = (string) ($_POST['delivery_option'] ?? 'standard');

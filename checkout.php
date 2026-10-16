@@ -69,7 +69,7 @@ if ($initFul === 'pickup') {
 } elseif ($initBarangay !== '' && isset($barangayDistances[$initBarangay])) {
     $dKm = (float) $barangayDistances[$initBarangay];
     $initDistanceKm = (string) $dKm;
-    $baseRider = (float) (ceil($dKm / 10) * 10);
+    $baseRider = (float) (50 + max(0, ceil($dKm - 5)) * 15);
     if ($initDeliveryOption === 'priority') {
         $baseRider += $kkPrioritySurcharge;
     }
@@ -77,7 +77,7 @@ if ($initFul === 'pickup') {
 } elseif (($pf['distance_km'] ?? '') !== '') {
     $dKm = (float) $pf['distance_km'];
     $initDistanceKm = trim((string) $pf['distance_km']);
-    $baseRider = (float) (ceil($dKm / 10) * 10);
+    $baseRider = (float) (50 + max(0, ceil($dKm - 5)) * 15);
     if ($initDeliveryOption === 'priority') {
         $baseRider += $kkPrioritySurcharge;
     }
@@ -344,7 +344,7 @@ function refreshCheckoutTotals() {
         km = parseFloat(barangayMap[barangayInput.value], 10);
     }
     if (isNaN(km)) return;
-    const rider = Math.ceil(km / 10) * 10 + deliverySurcharge();
+    const rider = (50 + Math.max(0, Math.ceil(km - 5)) * 15) + deliverySurcharge();
     distanceInput.value = km;
     riderFeeInput.value = String(rider);
     riderFeeSpan.textContent = rider.toFixed(2);

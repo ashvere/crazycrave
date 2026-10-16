@@ -20,9 +20,14 @@ export function isDeliveryOption(v: string): v is DeliveryOption {
   return (DELIVERY_OPTIONS as readonly string[]).includes(v);
 }
 
-/** Rider fee: ₱10 per started 10 km block, plus surcharge for priority (same formula as PHP checkout). */
+export const BASE_RIDER_FEE = 50;
+export const BASE_RIDER_KM = 5;
+export const EXTRA_KM_FEE = 15;
+
+/** Rider fee: ₱50 for the first 5 km, +₱15 per started km beyond that, plus surcharge for priority. */
 export function riderFeeFor(distanceKm: number, option: DeliveryOption): number {
-  const base = Math.ceil(distanceKm / 10) * 10;
+  const extraKm = Math.max(0, Math.ceil(distanceKm - BASE_RIDER_KM));
+  const base = BASE_RIDER_FEE + extraKm * EXTRA_KM_FEE;
   return option === "priority" ? base + PRIORITY_SURCHARGE : base;
 }
 

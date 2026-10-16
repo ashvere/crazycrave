@@ -168,7 +168,7 @@
         var kmS = modalEl.getAttribute('data-kk-sel-km');
         if (kmS !== null && kmS !== '') {
           var km = parseFloat(kmS, 10);
-          if (!isNaN(km)) rider = Math.ceil(km / 10) * 10 + kkDeliverySurcharge();
+          if (!isNaN(km)) rider = (50 + Math.max(0, Math.ceil(km - 5)) * 15) + kkDeliverySurcharge();
         }
       }
       var tot = food + rider;
@@ -418,7 +418,7 @@
         if (kmS !== null && kmS !== '') km = parseFloat(kmS, 10);
         if (isNaN(km)) km = kkKmFromBarangayField();
         if (!isNaN(km)) {
-          var rider = Math.ceil(km / 10) * 10 + kkDeliverySurcharge();
+          var rider = (50 + Math.max(0, Math.ceil(km - 5)) * 15) + kkDeliverySurcharge();
           if (dKmEl) dKmEl.value = String(km);
           if (rFeeEl) rFeeEl.value = String(rider);
         } else {

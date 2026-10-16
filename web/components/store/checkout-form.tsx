@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
+import { MAX_LINE_QTY } from "@/lib/cart-cookies";
 import { placeOrder } from "@/app/(store)/checkout/actions";
 import { DigitsInput } from "@/components/store/digits-input";
 import {
@@ -43,6 +45,56 @@ const DELIVERY_CHOICES: { value: DeliveryOption; name: string; meta: string }[] 
 const PAYMENT_CHOICES: { value: PaymentOption; name: string; icon: string }[] = [
   { value: "cod", name: "Cash on delivery", icon: "bi-cash-coin" },
 ];
+
+/**
+ * − qty + for a checkout line. Updates the cart cookie in the background and re-renders the
+ * page, so whatever the customer already typed in the form below is kept.
+ */
+function CheckoutQty({ menuId, qty, name }: { menuId: number; qty: number; name: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const disabled = busy || pending;
+
+  async function change(op: "inc" | "dec") {
+    setBusy(true);
+    try {
+      const body = new FormData();
+      body.set("menu_id", String(menuId));
+      body.set("op", op);
+      await fetch("/api/cart/qty", { method: "POST", body, redirect: "manual" });
+    } finally {
+      setBusy(false);
+      startTransition(() => router.refresh());
+    }
+  }
+
+  return (
+    <div className="kk-qty kk-qty--sm" aria-busy={disabled}>
+      <button
+        type="button"
+        className="kk-qty__btn"
+        disabled={disabled}
+        onClick={() => change("dec")}
+        aria-label={qty === 1 ? `Remove ${name}` : `One less ${name}`}
+      >
+        <i className={`bi ${qty === 1 ? "bi-trash3" : "bi-dash-lg"}`} aria-hidden="true" />
+      </button>
+      <span className="kk-qty__value tabular-nums" aria-live="polite">
+        {qty}
+      </span>
+      <button
+        type="button"
+        className="kk-qty__btn"
+        disabled={disabled || qty >= MAX_LINE_QTY}
+        onClick={() => change("inc")}
+        aria-label={`One more ${name}`}
+      >
+        <i className="bi bi-plus-lg" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
@@ -116,7 +168,9 @@ export function CheckoutForm({
                 {lines.map((l) => (
                   <tr key={l.menu_id}>
                     <td className="fw-medium">{l.name}</td>
-                    <td className="text-end tabular-nums">{l.qty}</td>
+                    <td className="text-end">
+                      <CheckoutQty menuId={l.menu_id} qty={l.qty} name={l.name} />
+                    </td>
                     <td className="text-end tabular-nums">₱{peso(l.price * l.qty)}</td>
                   </tr>
                 ))}

@@ -6,7 +6,7 @@ export const BARANGAY_DISTANCES: Record<string, number> = barangayMap;
 export const STORE_PICKUP_BARANGAY = "Store pickup";
 export const PRIORITY_SURCHARGE = 30;
 
-export const PAYMENT_OPTIONS = ["cod", "gcash", "bank", "card"] as const;
+export const PAYMENT_OPTIONS = ["cod"] as const;
 export type PaymentOption = (typeof PAYMENT_OPTIONS)[number];
 
 export const DELIVERY_OPTIONS = ["standard", "priority", "scheduled"] as const;

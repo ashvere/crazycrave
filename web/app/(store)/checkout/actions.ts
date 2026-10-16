@@ -17,7 +17,6 @@ import {
   PRIORITY_SURCHARGE,
   STORE_PICKUP_BARANGAY,
   isDeliveryOption,
-  isPaymentOption,
   normalizePhPhone,
   riderFeeFor,
   roundMoney,
@@ -56,9 +55,6 @@ export async function placeOrder(formData: FormData): Promise<void> {
   const orderNotes = String(formData.get("order_notes") ?? "").trim().slice(0, 500);
   const optRaw = String(formData.get("delivery_option") ?? "standard");
   const deliveryOption = isDeliveryOption(optRaw) ? optRaw : "standard";
-  const payRaw = String(formData.get("payment_method") ?? "cod");
-  const payment = isPaymentOption(payRaw) ? payRaw : "cod";
-  const gcashRef = String(formData.get("gcash_ref") ?? "").trim().slice(0, 64);
 
   const phone = normalizePhPhone(String(formData.get("customer_phone") ?? ""));
   if (!phone) fail("phone");
@@ -103,10 +99,8 @@ export async function placeOrder(formData: FormData): Promise<void> {
   const total = roundMoney(foodTotal + riderFee);
 
   /* PAYMENT + ADDRESS NOTES (same text conventions as PHP so staff screens read alike) */
-  const paymentMethod: "cod" | "gcash" = payment === "gcash" ? "gcash" : "cod";
-  if (payment === "bank") deliveryAddress += "\n\nPreferred payment: Bank transfer";
-  else if (payment === "card") deliveryAddress += "\n\nPreferred payment: Credit / debit card";
-  if (paymentMethod === "gcash" && gcashRef !== "") deliveryAddress += `\n\nGCash reference: ${gcashRef}`;
+  // Cash on delivery is the only payment method offered.
+  const paymentMethod = "cod";
   if (orderNotes !== "") deliveryAddress += `\n\nCustomer notes: ${orderNotes}`;
 
   if (fulfillment === "pickup") {
@@ -122,7 +116,7 @@ export async function placeOrder(formData: FormData): Promise<void> {
     pickupTime = `${time}:00`;
   }
 
-  const paymentStatus = paymentMethod === "gcash" && gcashRef !== "" ? "paid" : "pending";
+  const paymentStatus = "pending";
 
   const { data: profile } = await supabase
     .from("profiles")

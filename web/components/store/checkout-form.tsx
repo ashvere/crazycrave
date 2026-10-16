@@ -42,9 +42,6 @@ const DELIVERY_CHOICES: { value: DeliveryOption; name: string; meta: string }[] 
 
 const PAYMENT_CHOICES: { value: PaymentOption; name: string; icon: string }[] = [
   { value: "cod", name: "Cash on delivery", icon: "bi-cash-coin" },
-  { value: "gcash", name: "GCash", icon: "bi-phone" },
-  { value: "bank", name: "Bank transfer", icon: "bi-bank" },
-  { value: "card", name: "Credit / debit card", icon: "bi-credit-card-2-front" },
 ];
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
@@ -375,30 +372,6 @@ export function CheckoutForm({
               </div>
             ))}
 
-            {payment === "gcash" ? (
-              <div className="checkout-page__field mb-0 mt-2">
-                <label className="checkout-page__label" htmlFor="gcash_ref">
-                  GCash reference number
-                </label>
-                <input
-                  type="text"
-                  name="gcash_ref"
-                  id="gcash_ref"
-                  className="form-control checkout-page__control"
-                  placeholder="Reference after you pay (optional)"
-                  autoComplete="off"
-                  maxLength={64}
-                />
-                <p className="small text-muted mt-1 mb-0">
-                  Send payment via GCash, then enter your reference here if you have one.
-                </p>
-              </div>
-            ) : null}
-            {payment === "bank" || payment === "card" ? (
-              <p className="small text-muted mt-2 mb-0">
-                The shop will contact you to arrange {payment === "bank" ? "the bank transfer" : "card payment"}.
-              </p>
-            ) : null}
           </section>
 
           <SubmitButton disabled={!pickup && !validBarangay} />

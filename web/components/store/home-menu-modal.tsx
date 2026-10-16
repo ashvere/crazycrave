@@ -325,30 +325,6 @@ export function HomeMenuModal({ barangayMap, scheduleMinDate }: Props) {
                       <span className="badge bg-success">Available</span>
                     </label>
                   </div>
-                  <div className="payment-option">
-                    <input type="radio" name="kk_order_payment" value="gcash" id="kkPayGcash" />
-                    <label htmlFor="kkPayGcash" className="d-inline-flex align-items-center flex-wrap gap-2 mb-0">
-                      <i className="bi bi-phone fs-5 text-primary" aria-hidden="true" />
-                      <span>GCash</span>
-                      <span className="badge bg-success">Available</span>
-                    </label>
-                  </div>
-                  <div className="payment-option">
-                    <input type="radio" name="kk_order_payment" value="bank" id="kkPayBank" />
-                    <label htmlFor="kkPayBank" className="d-inline-flex align-items-center flex-wrap gap-2 mb-0">
-                      <i className="bi bi-bank fs-5 text-body-secondary" aria-hidden="true" />
-                      <span>Bank transfer</span>
-                      <span className="badge bg-success">Available</span>
-                    </label>
-                  </div>
-                  <div className="payment-option">
-                    <input type="radio" name="kk_order_payment" value="card" id="kkPayCard" />
-                    <label htmlFor="kkPayCard" className="d-inline-flex align-items-center flex-wrap gap-2 mb-0">
-                      <i className="bi bi-credit-card-2-front fs-5 text-body-secondary" aria-hidden="true" />
-                      <span>Credit / debit card</span>
-                      <span className="badge bg-success">Available</span>
-                    </label>
-                  </div>
                 </div>
               </div>
             </div>

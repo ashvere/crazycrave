@@ -28,6 +28,7 @@ export async function fetchReceiptOrder(
     created_at: String(o.created_at),
     total: Number(o.total),
     rider_fee: Number(o.rider_fee ?? 0),
+    distance_km: Number(o.distance_km ?? 0),
     payment_method: String(o.payment_method),
     payment_status: String(o.payment_status),
     order_status: String(o.order_status),

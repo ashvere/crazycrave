@@ -1,6 +1,8 @@
+import { Fragment } from "react";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { addressOnly, gcashReference, orderReference, type ReceiptOrder } from "@/lib/receipt";
 import { ReceiptActions } from "@/components/receipt-actions";
+import { riderFeeBreakdown } from "@/lib/checkout";
 
 const peso = (n: number) =>
   `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -14,6 +16,11 @@ export function Receipt({ order }: { order: ReceiptOrder }) {
   const pickup = /pickup/i.test(`${order.barangay} ${order.delivery_address}`);
   const subtotal = order.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
   const fee = Number(order.rider_fee) || 0;
+  const priority = order.delivery_address.includes("Delivery option: Priority");
+  const feeLines = riderFeeBreakdown(order.distance_km, priority ? "priority" : "standard");
+  // Orders priced under an older fee rule won't add up; show just the total for those.
+  const showFeeLines =
+    fee > 0 && order.distance_km > 0 && feeLines.reduce((s, l) => s + l.amount, 0) === fee;
   const placed = new Date(order.created_at).toLocaleString("en-PH", {
     timeZone: "Asia/Manila",
     dateStyle: "medium",
@@ -87,8 +94,19 @@ export function Receipt({ order }: { order: ReceiptOrder }) {
         <dd className="col-5 mb-1 text-end tabular-nums">{peso(subtotal)}</dd>
         {fee > 0 ? (
           <>
-            <dt className="col-7 text-muted fw-normal">Delivery fee</dt>
+            <dt className="col-7 text-muted fw-normal">
+              Delivery fee
+              {order.distance_km > 0 ? <span className="ms-1">({order.distance_km} km)</span> : null}
+            </dt>
             <dd className="col-5 mb-1 text-end tabular-nums">{peso(fee)}</dd>
+            {showFeeLines
+              ? feeLines.map((l) => (
+                  <Fragment key={l.label}>
+                    <dt className="col-7 text-muted fw-normal ps-4 fst-italic">{l.label}</dt>
+                    <dd className="col-5 mb-1 text-end text-muted tabular-nums">{peso(l.amount)}</dd>
+                  </Fragment>
+                ))
+              : null}
           </>
         ) : null}
         <dt className="col-7 fw-bold fs-6">Total</dt>

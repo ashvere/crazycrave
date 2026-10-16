@@ -31,6 +31,19 @@ export function riderFeeFor(distanceKm: number, option: DeliveryOption): number 
   return option === "priority" ? base + PRIORITY_SURCHARGE : base;
 }
 
+/** Line items that make up `riderFeeFor` (base, extra km, priority), for receipts. */
+export function riderFeeBreakdown(
+  distanceKm: number,
+  option: DeliveryOption
+): { label: string; amount: number }[] {
+  const extraKm = Math.max(0, Math.ceil(distanceKm - BASE_RIDER_KM));
+  const lines = [{ label: `Base fee (first ${BASE_RIDER_KM} km)`, amount: BASE_RIDER_FEE }];
+  if (extraKm > 0)
+    lines.push({ label: `Extra ${extraKm} km × ₱${EXTRA_KM_FEE}`, amount: extraKm * EXTRA_KM_FEE });
+  if (option === "priority") lines.push({ label: "Priority delivery", amount: PRIORITY_SURCHARGE });
+  return lines;
+}
+
 export function roundMoney(n: number): number {
   return Math.round(n * 100) / 100;
 }

@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { CancelOrderModal } from "@/components/store/cancel-order-modal";
 import { RateOrderForm } from "@/components/store/rate-order-form";
 import { Stars } from "@/components/stars";
+import { ReceiptActions } from "@/components/receipt-actions";
+import { orderReference } from "@/lib/receipt";
 import { canRate, fetchOrderRatings } from "@/lib/ratings";
 import {
   customerCanCancel,
@@ -47,6 +49,7 @@ export default async function OrderTrackPage({
   const canCancel = customerCanCancel(row);
   const pickup = isPickupOrder(row);
   const shopName = row.restaurants?.name ?? "Shop";
+  const reference = orderReference(row.id, row.created_at);
 
   let riderName: string | null = null;
   if (row.rider_id) {
@@ -69,7 +72,7 @@ export default async function OrderTrackPage({
   if (sp.placed === "1") {
     alert = {
       kind: "success",
-      message: "Order placed! The shop has received it — you can follow its progress here.",
+      message: `Order placed! Your reference number is ${orderReference(row.id, row.created_at)} — the shop has received it and you can follow its progress here.`,
     };
   } else if (sp.cancelled === "1") {
     alert = { kind: "success", message: "Your order has been cancelled." };
@@ -91,10 +94,20 @@ export default async function OrderTrackPage({
             <p className="order-track-page__kicker">Order tracking</p>
             <h1 className="order-track-page__title">Order #{orderId}</h1>
             <p className="order-track-page__shop">{shopName}</p>
-            <Link href={`/order-track/${orderId}/receipt`} className="btn btn-sm btn-outline-dark mt-2">
-              <i className="bi bi-receipt me-1" aria-hidden="true" />
-              View receipt
-            </Link>
+            <section
+              className="border rounded-3 bg-white px-3 py-2 mt-2 d-inline-block"
+              aria-label="Order reference number"
+            >
+              <p className="small text-muted mb-0">Reference number</p>
+              <p className="h5 fw-bold font-monospace mb-2">{reference}</p>
+              <div className="d-flex flex-wrap gap-2">
+                <ReceiptActions reference={reference} print={false} />
+                <Link href={`/order-track/${orderId}/receipt`} className="btn btn-sm btn-outline-dark">
+                  <i className="bi bi-receipt me-1" aria-hidden="true" />
+                  View receipt
+                </Link>
+              </div>
+            </section>
           </header>
 
           {alert ? (

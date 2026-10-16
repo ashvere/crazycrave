@@ -21,6 +21,7 @@ export type ReceiptOrder = {
   created_at: string;
   total: number;
   rider_fee: number;
+  distance_km: number;
   payment_method: string;
   payment_status: string;
   order_status: string;

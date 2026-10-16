@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
@@ -88,6 +89,11 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Sea
     <main className="checkout-page">
       <div className="container checkout-page__inner">
         <header className="checkout-page__intro">
+          <Link href="/cart" className="checkout-page__back-cart mb-3">
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+            <i className="bi bi-bag" aria-hidden="true" />
+            <span>Back to cart</span>
+          </Link>
           <p className="checkout-page__kicker">Almost there</p>
           <h1 className="checkout-page__title">Checkout</h1>
           <p className="checkout-page__lede">Confirm your order and delivery details.</p>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { placeOrder } from "@/app/(store)/checkout/actions";
@@ -105,11 +104,6 @@ export function CheckoutForm({
               <i className="bi bi-bag-check" aria-hidden="true" />
               <span>Your order</span>
             </h2>
-            <Link href="/cart" className="checkout-page__back-cart">
-              <i className="bi bi-arrow-left" aria-hidden="true" />
-              <i className="bi bi-bag" aria-hidden="true" />
-              <span>Back to cart</span>
-            </Link>
           </div>
 
           <div className="table-responsive checkout-page__scroll">

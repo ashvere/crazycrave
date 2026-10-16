@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { RiderOrderRow } from "@/lib/rider-data";
 import { mapsDestination } from "@/lib/rider-maps";
 import {
+  riderDeliveryOptionMeta,
   riderDeliveryStatusMeta,
   riderOrderStatusMeta,
 } from "@/lib/rider-meta";
@@ -70,6 +71,8 @@ export function RiderDashboard({ orders, riderName, chatUnread = {} }: Props) {
                 const deliveryStatus = o.delivery_status ?? "assigned";
                 const delMeta = riderDeliveryStatusMeta(deliveryStatus);
                 const ordMeta = riderOrderStatusMeta(o.order_status ?? "pending");
+                const optMeta = riderDeliveryOptionMeta(o.delivery_address, o.barangay);
+                const riderFee = Number(o.rider_fee ?? 0) || 0;
                 const mapsDest = mapsDestination(o.delivery_address, o.barangay ?? "");
                 const placed = o.created_at
                   ? new Date(o.created_at).toLocaleString(undefined, {
@@ -103,7 +106,17 @@ export function RiderDashboard({ orders, riderName, chatUnread = {} }: Props) {
                       ) : null}
                       <span className={`rider-pill ${ordMeta.className}`}>{ordMeta.label}</span>
                       <span className={`rider-pill ${delMeta.className}`}>{delMeta.label}</span>
+                      <span className={`rider-pill ${optMeta.className}`}>
+                        <i className={`bi ${optMeta.icon} me-1`} aria-hidden="true" />
+                        {optMeta.label}
+                      </span>
                     </div>
+                    {riderFee > 0 ? (
+                      <p className="rider-delivery-card__fee">
+                        Your fee: <strong className="tabular-nums">₱{riderFee.toFixed(2)}</strong>
+                        {Number(o.distance_km) > 0 ? ` · ${Number(o.distance_km)} km` : ""}
+                      </p>
+                    ) : null}
                     {(chatUnread[o.id] ?? 0) > 0 ? (
                       <Link href={`/rider/order/${o.id}/chat`} className="rider-msg-chip">
                         <i className="bi bi-chat-dots-fill" aria-hidden="true" />

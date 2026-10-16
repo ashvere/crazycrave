@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { RiderOrderItemRow, RiderOrderRow } from "@/lib/rider-data";
 import { mapsDestination } from "@/lib/rider-maps";
 import {
+  riderDeliveryOptionMeta,
   riderDeliveryStatusMeta,
   riderOrderStatusMeta,
 } from "@/lib/rider-meta";
@@ -23,7 +24,9 @@ const PAYMENT: Record<string, { label: string; icon: string }> = {
 const peso = (n: number) => `₱${Number(n).toFixed(2)}`;
 
 /** Address without the "Customer notes: …" block that checkout appends. */
-function splitAddress(raw: string): { address: string; notes: string | null } {
+function splitAddress(full: string): { address: string; notes: string | null } {
+  // Delivery type is shown as its own row, so drop the lines checkout appends for it.
+  const raw = full.replace(/\n\n(Delivery option: [^\n]*|Scheduled delivery: [^\n]*|Fulfillment: Store pickup)/g, "");
   const i = raw.indexOf("\n\nCustomer notes: ");
   if (i < 0) return { address: raw.replace(/\n\nContact: [^\n]+\s*$/, "").trim(), notes: null };
   return {
@@ -47,6 +50,9 @@ export function RiderOrderDetail({ order, items, chatUnread = 0 }: Props) {
     icon: "bi-wallet2",
   };
   const isCod = String(order.payment_method ?? "").toLowerCase() === "cod";
+  const optMeta = riderDeliveryOptionMeta(raw, barangay);
+  const riderFee = Number(order.rider_fee ?? 0) || 0;
+  const distanceKm = Number(order.distance_km ?? 0) || 0;
 
   return (
     <main className="rider-dash-page">
@@ -64,6 +70,10 @@ export function RiderOrderDetail({ order, items, chatUnread = 0 }: Props) {
           <div className="rider-od-head__pills">
             <span className={`rider-pill ${delMeta.className}`}>{delMeta.label}</span>
             <span className={`rider-pill ${ordMeta.className}`}>Kitchen: {ordMeta.label}</span>
+            <span className={`rider-pill ${optMeta.className}`}>
+              <i className={`bi ${optMeta.icon} me-1`} aria-hidden="true" />
+              {optMeta.label}
+            </span>
           </div>
         </header>
 
@@ -111,6 +121,26 @@ export function RiderOrderDetail({ order, items, chatUnread = 0 }: Props) {
                 <i className={`bi ${pay.icon}`} aria-hidden="true" /> Payment
               </dt>
               <dd>{pay.label}</dd>
+            </div>
+            <div className="rider-od-row">
+              <dt>
+                <i className={`bi ${optMeta.icon}`} aria-hidden="true" /> Delivery type
+              </dt>
+              <dd>{optMeta.label}</dd>
+            </div>
+            <div className="rider-od-row">
+              <dt>
+                <i className="bi bi-wallet2" aria-hidden="true" /> Your fee
+              </dt>
+              <dd>
+                <span className="fw-semibold tabular-nums">{peso(riderFee)}</span>
+                {distanceKm > 0 ? (
+                  <span className="rider-od-row__sub tabular-nums">
+                    {distanceKm} km
+                    {optMeta.label === "Priority" ? " · includes ₱30 priority bonus" : ""}
+                  </span>
+                ) : null}
+              </dd>
             </div>
             <div className="rider-od-row rider-od-row--total">
               <dt>

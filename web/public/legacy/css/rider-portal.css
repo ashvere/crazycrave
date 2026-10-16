@@ -882,6 +882,34 @@
     border-color: #e5e7eb;
 }
 
+.rider-pill--standard {
+    color: #0f766e;
+    background: #f0fdfa;
+    border-color: #99f6e4;
+}
+
+.rider-pill--priority {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.rider-pill--scheduled {
+    color: #4338ca;
+    background: #eef2ff;
+    border-color: #c7d2fe;
+}
+
+.rider-delivery-card__fee {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    color: #4b5563;
+}
+
+.rider-delivery-card__fee strong {
+    color: #15803d;
+}
+
 .rider-pill--new {
     color: #9a3412;
     background: #ffedd5;

@@ -25,3 +25,22 @@ export function riderOrderStatusMeta(status: string): { className: string; label
       return { className: "rider-pill--pending", label: "Pending" };
   }
 }
+
+/**
+ * Delivery type, read from the notes checkout appends to `delivery_address`
+ * ("Delivery option: Priority …" / "Scheduled delivery: …"); anything else is standard.
+ */
+export function riderDeliveryOptionMeta(
+  address: string | null | undefined,
+  barangay: string | null | undefined
+): { className: string; label: string; icon: string } {
+  const raw = address ?? "";
+  if (/pickup/i.test(barangay ?? "") || raw.includes("Fulfillment: Store pickup"))
+    return { className: "rider-pill--muted", label: "Store pickup", icon: "bi-shop" };
+  if (raw.includes("Delivery option: Priority"))
+    return { className: "rider-pill--priority", label: "Priority", icon: "bi-lightning-charge-fill" };
+  const sched = raw.match(/Scheduled delivery: (\d{4}-\d{2}-\d{2}) at (\d{2}:\d{2})/);
+  if (sched)
+    return { className: "rider-pill--scheduled", label: `Scheduled · ${sched[1]} ${sched[2]}`, icon: "bi-calendar-event" };
+  return { className: "rider-pill--standard", label: "Standard", icon: "bi-bicycle" };
+}

@@ -13,6 +13,8 @@ export type RiderOrderRow = {
   delivery_status: string;
   delivery_address: string;
   barangay: string;
+  distance_km?: number | null;
+  rider_fee?: number | null;
   rider_id: string | null;
   created_at: string;
   delivery_proof_url: string | null;

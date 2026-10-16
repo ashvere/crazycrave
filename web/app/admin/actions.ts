@@ -7,6 +7,7 @@ import { getSupabasePublicConfig } from "@/lib/supabase/env";
 import { fetchProfileRole } from "@/lib/supabase/profile-role";
 import { getStaffSession, staffShopId, type StaffSession } from "@/lib/staff-session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fetchAssignableRiders, ridersForShop } from "@/lib/assignable-riders";
 import { MENU_IMAGE_BUCKET, uploadPublicImage } from "@/lib/shop-logos";
 
 export type StaffSignInResult = { error: string } | { ok: true };
@@ -109,7 +110,7 @@ export async function adminAssignRider(formData: FormData): Promise<void> {
 
   const { data: order } = await supabase
     .from("orders")
-    .select("id, shop_id")
+    .select("id, shop_id, rider_id")
     .eq("id", orderId)
     .maybeSingle();
 
@@ -120,6 +121,14 @@ export async function adminAssignRider(formData: FormData): Promise<void> {
 
   const riderId = riderRaw === "" ? null : riderRaw;
 
+  // A new rider must be approved, deliver for this shop (or all shops) and be marked available.
+  if (riderId && riderId !== order.rider_id) {
+    const rider = ridersForShop(await fetchAssignableRiders(supabase), order.shop_id).find(
+      (r) => r.id === riderId
+    );
+    if (!rider || rider.fleet_status !== "available") return;
+  }
+
   const { error } = await supabase.from("orders").update({ rider_id: riderId }).eq("id", orderId);
 
   if (error) {
@@ -129,6 +138,7 @@ export async function adminAssignRider(formData: FormData): Promise<void> {
 
   revalidatePath("/admin");
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
 }
 
 export async function adminUpdateOrderStatus(formData: FormData): Promise<void> {

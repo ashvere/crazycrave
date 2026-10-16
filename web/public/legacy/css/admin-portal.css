@@ -2592,6 +2592,7 @@ body.pos-fullscreen.pos-page {
 }
 .rcard--approved .rcard__status { background: #dcfce7; color: #166534; }
 .rcard--approved .rcard__status.is-busy { background: #e0f2fe; color: #075985; }
+.rcard--approved .rcard__status.is-away { background: #f3f4f6; color: #4b5563; }
 .rcard__facts {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

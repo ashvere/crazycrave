@@ -4,6 +4,7 @@ import { shopLogoSrc } from "@/lib/shop-logos";
 import { AdminOverview } from "@/components/admin/admin-overview";
 import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
+import { fetchAssignableRiders, ridersForShop } from "@/lib/assignable-riders";
 import {
   DeliveryStatusPill,
   OrderStatusPill,
@@ -14,6 +15,7 @@ import {
 type OrderRow = {
   id: number;
   customer_display_name: string;
+  shop_id: number;
   total: number;
   payment_method: string;
   payment_status: string;
@@ -51,7 +53,7 @@ export default async function AdminDashboardPage() {
   let ordersQuery = supabase
     .from("orders")
     .select(
-      "id, customer_display_name, total, payment_method, payment_status, order_status, delivery_status, rider_id, created_at"
+      "id, customer_display_name, shop_id, total, payment_method, payment_status, order_status, delivery_status, rider_id, created_at"
     )
     .order("id", { ascending: false })
     .limit(40);
@@ -63,16 +65,7 @@ export default async function AdminDashboardPage() {
   const { data: orderRows } = await ordersQuery;
   orders = (orderRows as OrderRow[] | null) ?? [];
 
-  let riders: { id: string; display_name: string | null }[] = [];
-  if (shopScope !== null) {
-    const { data: r } = await supabase
-      .from("profiles")
-      .select("id, display_name")
-      .eq("role", "rider")
-      .eq("approval_status", "approved")
-      .eq("restaurant_id", shopScope);
-    riders = (r as { id: string; display_name: string | null }[] | null) ?? [];
-  }
+  const allRiders = await fetchAssignableRiders(supabase);
 
   const totalOrders = orders.length;
   const completed = orders.filter((o) => o.order_status === "completed").length;
@@ -174,7 +167,7 @@ export default async function AdminDashboardPage() {
                           </Link>
                           <AssignRiderForm
                             orderId={order.id}
-                            riders={riders}
+                            riders={ridersForShop(allRiders, order.shop_id)}
                             currentRiderId={order.rider_id}
                           />
                         </div>

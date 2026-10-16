@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/staff-session";
-import { createRider, setRiderApproval } from "./actions";
+import { createRider, setRiderApproval, setRiderShop } from "./actions";
 import { Stars } from "@/components/stars";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 import { riderRatings } from "@/lib/ratings";
@@ -30,6 +30,7 @@ const NOTICES: Record<string, { kind: string; text: string }> = {
   invalid: { kind: "warning", text: "That request was not valid." },
   config: { kind: "warning", text: "Server is missing SUPABASE_SERVICE_ROLE_KEY." },
   failed: { kind: "danger", text: "Could not update the rider. Please try again." },
+  shop: { kind: "success", text: "Rider shop updated — they now show in that shop's assign list." },
   created: { kind: "success", text: "Rider account created — they can sign in at /rider/login now." },
   rider_fields: { kind: "warning", text: "Enter a name, a valid email, and a password of at least 8 characters." },
   rider_email: { kind: "warning", text: "That email already has an account." },
@@ -81,8 +82,8 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
   const approvedIds = riders.filter((r) => r.approval_status === "approved").map((r) => String(r.id));
   const [{ data: details }, { data: docs }, emails, ratings] = await Promise.all([
     ids.length
-      ? admin.from("rider_profiles").select("user_id, phone, vehicle_type, vehicle_plate").in("user_id", ids)
-      : Promise.resolve({ data: [] as { user_id: string; phone: string | null; vehicle_type: string; vehicle_plate: string | null }[] }),
+      ? admin.from("rider_profiles").select("user_id, phone, vehicle_type, vehicle_plate, fleet_status").in("user_id", ids)
+      : Promise.resolve({ data: [] as { user_id: string; phone: string | null; vehicle_type: string; vehicle_plate: string | null; fleet_status: string | null }[] }),
     ids.length
       ? admin.from("rider_documents").select("user_id, doc_type, storage_path").in("user_id", ids)
       : Promise.resolve({ data: [] as { user_id: string; doc_type: string; storage_path: string }[] }),
@@ -236,8 +237,16 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
                     <p className="rcard__email">{emailBy.get(id) || "—"}</p>
                   </div>
                   {tab === "approved" ? (
-                    <span className={`rcard__status${busy ? " is-busy" : ""}`}>
-                      {busy ? `On delivery (${busy})` : "Available"}
+                    <span
+                      className={`rcard__status${busy ? " is-busy" : ""}${!busy && d?.fleet_status && d.fleet_status !== "available" ? " is-away" : ""}`}
+                    >
+                      {busy
+                        ? `On delivery (${busy})`
+                        : d?.fleet_status === "busy"
+                          ? "Busy"
+                          : d?.fleet_status === "offline"
+                            ? "Offline"
+                            : "Available"}
                     </span>
                   ) : (
                     <span className="rcard__status">Applied {day(String(r.created_at))}</span>
@@ -327,7 +336,27 @@ export default async function AdminRidersPage({ searchParams }: { searchParams: 
                         <i className="bi bi-check2" aria-hidden="true" /> Approve
                       </button>
                     </form>
-                  ) : null}
+                  ) : (
+                    <form action={setRiderShop} className="rcard__approve">
+                      <input type="hidden" name="rider_id" value={id} />
+                      <select
+                        name="restaurant_id"
+                        className="staff-field__select"
+                        aria-label={`Shop ${name} delivers for`}
+                        defaultValue={r.restaurant_id ? String(r.restaurant_id) : ""}
+                      >
+                        <option value="">All shops</option>
+                        {(shops ?? []).map((s) => (
+                          <option key={String(s.id)} value={String(s.id)}>
+                            Only {String(s.name)}
+                          </option>
+                        ))}
+                      </select>
+                      <button type="submit" className="staff-btn staff-btn--secondary">
+                        <i className="bi bi-shop" aria-hidden="true" /> Change shop
+                      </button>
+                    </form>
+                  )}
                   <Link href={`/admin/messages?rider=${id}`} className="staff-btn staff-btn--secondary">
                     <i className="bi bi-chat-dots" aria-hidden="true" /> Message
                   </Link>

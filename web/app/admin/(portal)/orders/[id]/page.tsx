@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
+import { fetchAssignableRiders, ridersForShop } from "@/lib/assignable-riders";
 import { proofImageUrl } from "@/lib/delivery-proof";
 import { Stars } from "@/components/stars";
 import { fetchOrderRatings } from "@/lib/ratings";
@@ -69,25 +70,14 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
     .eq("order_id", id)
     .order("id");
 
-  const shopIdForRiders = order.shop_id as number;
-  const { data: riderRows } = await supabase
-    .from("profiles")
-    .select("id, display_name")
-    .eq("role", "rider")
-    .eq("approval_status", "approved")
-    .eq("restaurant_id", shopIdForRiders);
-
-  const riders = (riderRows as { id: string; display_name: string | null }[] | null) ?? [];
+  // Riders for this shop plus "all shops" riders; the dropdown only lets you pick available ones.
+  const riders = ridersForShop(await fetchAssignableRiders(supabase), order.shop_id as number);
   const riderId = (order.rider_id as string | null) ?? null;
   const { data: assigned } = riderId
     ? await supabase.from("profiles").select("display_name").eq("id", riderId).maybeSingle()
     : { data: null };
   const riderName = (assigned?.display_name as string | null)?.trim() || (riderId ? "Rider" : null);
-  // Let staff reassign to the shop's riders, keeping the current rider selectable.
-  const assignable =
-    riderId && !riders.some((r) => r.id === riderId)
-      ? [{ id: riderId, display_name: riderName }, ...riders]
-      : riders;
+  const otherRiders = riders.filter((r) => r.id !== riderId);
   const DELIVERY_STEPS = [
     { key: "assigned", label: "Assigned" },
     { key: "picked_up", label: "Picked up" },
@@ -265,10 +255,15 @@ export default async function AdminOrderDetailPage({ params }: { params: Params 
                   {proofNote ? <p className="staff-proof__note">{proofNote}</p> : null}
                 </div>
               ) : null}
-              {assignable.length > 1 ? (
+              {otherRiders.length > 0 ? (
                 <div className="d-flex flex-wrap align-items-center gap-2 mt-3">
                   <span className="staff-muted small">Reassign</span>
-                  <AssignRiderForm orderId={id} riders={assignable} currentRiderId={riderId} />
+                  <AssignRiderForm
+                    orderId={id}
+                    riders={riders}
+                    currentRiderId={riderId}
+                    currentRiderName={riderName}
+                  />
                 </div>
               ) : null}
             </>

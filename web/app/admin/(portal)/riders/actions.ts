@@ -55,6 +55,34 @@ export async function setRiderApproval(formData: FormData): Promise<void> {
   redirect(`/admin/riders?tab=${tab}&done=${status}`);
 }
 
+/** Move an approved rider to another shop, or to all shops. Platform admins only. */
+export async function setRiderShop(formData: FormData): Promise<void> {
+  const staff = await getStaffSession();
+  if (!staff || staff.role !== "admin") redirect("/admin");
+
+  const riderId = String(formData.get("rider_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(riderId)) redirect("/admin/riders?tab=approved&error=invalid");
+  const shopId = parseInt(String(formData.get("restaurant_id") ?? ""), 10);
+
+  const admin = createAdminClient();
+  if (!admin) redirect("/admin/riders?tab=approved&error=config");
+
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      restaurant_id: Number.isFinite(shopId) && shopId > 0 ? shopId : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", riderId)
+    .eq("role", "rider")
+    .eq("approval_status", "approved");
+  if (error) redirect("/admin/riders?tab=approved&error=failed");
+
+  revalidatePath("/admin/riders");
+  revalidatePath("/admin/orders");
+  redirect("/admin/riders?tab=approved&done=shop");
+}
+
 /**
  * Create an approved rider account directly (legacy admin/add-rider.php), skipping /rider/apply.
  */

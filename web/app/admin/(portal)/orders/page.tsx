@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff, staffShopId } from "@/lib/staff-session";
 import { AssignRiderForm } from "@/components/admin/assign-rider-form";
+import { fetchAssignableRiders, ridersForShop } from "@/lib/assignable-riders";
 import {
   DeliveryStatusPill,
   OrderStatusPill,
@@ -51,16 +52,7 @@ export default async function AdminOrdersPage() {
     orders = orders.filter((o) => o.shop_id === shopScope);
   }
 
-  let riders: { id: string; display_name: string | null }[] = [];
-  if (shopScope !== null) {
-    const { data: r } = await supabase
-      .from("profiles")
-      .select("id, display_name")
-      .eq("role", "rider")
-      .eq("approval_status", "approved")
-      .eq("restaurant_id", shopScope);
-    riders = (r as { id: string; display_name: string | null }[] | null) ?? [];
-  }
+  const allRiders = await fetchAssignableRiders(supabase);
 
   // Names of the riders who hold these orders (assigned rider may not be linked to the shop).
   const riderIds = [...new Set(orders.map((o) => o.rider_id).filter((v): v is string => !!v))];
@@ -74,7 +66,6 @@ export default async function AdminOrdersPage() {
   const riderLabel = (o: OrderRow) => (o.rider_id ? riderNames.get(o.rider_id) ?? "Rider" : null);
 
   const showShop = shopScope === null;
-  const canAssign = shopScope !== null;
 
   return (
     <>
@@ -153,9 +144,7 @@ export default async function AdminOrdersPage() {
                       </td>
                       <td className="text-end">
                         <div className="d-inline-flex flex-wrap gap-2 align-items-center justify-content-end">
-                          {canAssign ? (
-                            <AssignRiderForm orderId={o.id} riders={riders} currentRiderId={o.rider_id} />
-                          ) : null}
+                          <AssignRiderForm orderId={o.id} riders={ridersForShop(allRiders, o.shop_id)} currentRiderId={o.rider_id} currentRiderName={riderLabel(o)} />
                           <Link href={`/admin/orders/${o.id}`} className="staff-view-btn">
                             View <i className="bi bi-chevron-right" aria-hidden="true" />
                           </Link>
@@ -199,11 +188,9 @@ export default async function AdminOrdersPage() {
                     <i className="bi bi-chevron-right ms-auto text-muted" aria-hidden="true" />
                   </div>
                 </Link>
-                {canAssign ? (
-                  <div className="staff-order-card__rider">
-                    <AssignRiderForm orderId={o.id} riders={riders} currentRiderId={o.rider_id} />
-                  </div>
-                ) : null}
+                <div className="staff-order-card__rider">
+                  <AssignRiderForm orderId={o.id} riders={ridersForShop(allRiders, o.shop_id)} currentRiderId={o.rider_id} currentRiderName={riderLabel(o)} />
+                </div>
               </li>
             ))}
           </ul>
